@@ -99,55 +99,29 @@ function AssertArrayOfType(src, t) {
     }
 }
 
+
+
 /**
- * Function to check JSON against schema
- * Example:
+ * Function to check Object against a type schema with the possibility to reference schemas as the type of one or more fields.
  * 
- * let schema = {
- *      "id": "number",
- *      "name": "string",
- *      "active": "boolean",
- *      "details": {
- *          "email": "string",
- *          "age": "number"
- *      },
- *      "optionalField": {
- *          "type": "string",
- *          "optional": true
- *      },
- *      "tableau": ["number"],
- *      "tableau2": ["string"]
- * };
- * let myJson = {
- *      "id": 1,
- *      "name": "John",
- *      "active": true,
- *      "details": {
- *          "email": "john@example.com",
- *          "age": 30
- *      },
- *      "tableau": [1, 2, 3],
- *      "tableau2": ["a", "b", "c"],
- *      // "optionalField" is missing, but that's okay because it's optional
- *  };
- *  L.Debug(CheckJsonAgainstSchema(myJson, schema)); // Output: true
- *
- * @param {Object<string, any>} json 
- * @param {Object<string, any>} schema 
+ * @param {Object<string, any>} obj 
+ * @param {Object<string, any>} schema
+ * @param {Object<string, Object<string, any>>|undefined} referencedSchemas 
  * @returns 
  */
-function CheckJsonAgainstSchema(json, schema) {
-    AssertTypeOf(json, "object");
+function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
+    AssertTypeOf(obj, "object");
     AssertTypeOf(schema, "object");
+    AssertTypeOfOR(referencedSchemas, "object", "undefined");
 
     // Iterate over each property in the schema
     for (let key in schema) {
-        // If the JSON doesn't have this property, check if it's optional
-        if (!json.hasOwnProperty(key)) {
+        // If the Object doesn't have this property, check if it's optional
+        if (!obj.hasOwnProperty(key)) {
             if (schema[key].optional) {
                 continue; // If it's optional, skip the rest of the loop for this property
             } else {
-                L.Debug(`Missing property: ${key}`);
+                console.log(`Missing property: ${key}`);
                 return false;
             }
         }
@@ -159,40 +133,165 @@ function CheckJsonAgainstSchema(json, schema) {
             requiredType = schema[key];
         }
 
+        // If the required type is a reference a schema, substitute it
+        if (typeof requiredType === 'string' && requiredType.charAt(0) === "$") {
+            requiredType = referencedSchemas[requiredType];
+            if (requiredType === undefined || typeof requiredType !== 'object') {
+                throw new Error("could not find the schema " + requiredType + " referenced in root schema defintion"); // better to panic early for this error than returning false
+            }
+        }
+
         // If the required type is an object, recurse into it
         if (typeof requiredType === "object" && !Array.isArray(requiredType)) {
-            // If the corresponding JSON property is not an object, return false
-            if (typeof json[key] !== "object" || Array.isArray(json[key])) {
-                L.Debug(`Expected object for property: ${key}`);
+            // If the corresponding Object property is not an object, return false
+            if (typeof obj[key] !== "object" || Array.isArray(obj[key])) {
+                console.log(`Expected object for property: ${key}`);
                 return false;
             }
             // Recurse into the object
-            if (!CheckJsonAgainstSchema(json[key], requiredType)) {
+            if (!CheckObjectAgainstSchema(obj[key], requiredType, referencedSchemas)) {
                 return false;
             }
         } else if (Array.isArray(requiredType)) {
-            // If requiredType is an array, check if the json value is an array of the correct type
-            if (!Array.isArray(json[key])) {
-                L.Debug(`Expected array for property: ${key}`);
+            // If requiredType is an array, check if the object value is an array of the correct type
+            if (!Array.isArray(obj[key])) {
+                console.log(`Expected array for property: ${key}`);
                 return false;
             } else {
+                if (typeof requiredType[0] === 'string' && requiredType[0].charAt(0) === "$") {
+                    requiredType[0] = referencedSchemas[requiredType[0]];
+                    if (requiredType[0] === undefined || typeof requiredType[0] !== 'object') {
+                        throw new Error("could not find the schema " + requiredType[0] + " referenced in root schema defintion"); // better to panic early for this error than returning false
+                    }
+                }
+
                 // Check each item in the array
-                for (let item of json[key]) {
-                    // Recurse into the array item and expexted item type
-                    if (!CheckJsonAgainstSchema(item, requiredType[0])) {
-                        return false;
+                for (let item of obj[key]) {
+                    if (typeof requiredType[0] === 'object') {
+                        // Recurse into the array item and expected item type
+                        if (!CheckObjectAgainstSchema(item, requiredType[0], referencedSchemas)) {
+                            return false;
+                        }
+                    } else {
+                        // If the types don't match, return false
+                        if (typeof item !== requiredType[0]) {
+                            console.log(`Incorrect type for array item: ${item}. Expected ${requiredType[0]}, got ${typeof item}`);
+                            return false;
+                        }
                     }
                 }
             }
         } else {
             // If the types don't match, return false
-            if (typeof json[key] !== requiredType) {
-                L.Debug(`Incorrect type for property: ${key}. Expected ${requiredType}, got ${typeof json[key]}`);
+            if (typeof obj[key] !== requiredType) {
+                console.log(`Incorrect type for property: ${key}. Expected ${requiredType}, got ${typeof obj[key]}`);
                 return false;
             }
         }
     }
 
-    // If we made it through all properties without returning false, the JSON matches the schema
+    // If we made it through all properties without returning false, the Object matches the schema
     return true;
 }
+
+const NATIVE_SCHEMAS = {
+    "$HTML_ELEMENT": {
+        "tagName": "string",
+        "attributes": {
+            "id": "string",
+            "class": "string"
+        },
+        "children": {
+            "type": ["$HTML_ELEMENT"],
+            "optional": true,
+        }
+    },
+};
+
+class HTMLElementType {
+    /**
+     * 
+     * @param {Object<string, any>} htmlSchema 
+     */
+    constructor(htmlSchema) {
+        if (!CheckObjectAgainstSchema(htmlSchema, NATIVE_SCHEMAS["$HTML_ELEMENT"], NATIVE_SCHEMAS)) {
+            throw new Error("invalid parameter");
+        }
+        this.Schema = htmlSchema;
+    }
+
+    /**
+     * 
+     * @param {HTMLElement} node 
+     * @return {Boolean}
+     */
+    Check(node) {
+        // TODO
+        return false;
+    }
+
+    /**
+     * 
+     * @param {Object<string, any>} fromRecursiveAttributes 
+     * @return {HTMLElement}
+     */
+    ToHTML(fromRecursiveAttributes) {
+        // TODO
+        return null;
+    }
+
+    /**
+     * 
+     * @param {HTMLElement} element 
+     * @return {HTMLElementType}
+     */
+    static FromNode(element) {
+        AssertInstOf(element, HTMLElement);
+
+        /**
+         * 
+         * @param {HTMLElement} elem 
+         * @return {Object<string, any>}
+         */
+        let recurse = function (element) {
+            AssertInstOf(element, HTMLElement);
+
+            // Initialize the JSON object for this element.
+            let json = {
+                tagName: element.tagName.toLowerCase(),
+                attributes: {
+                    id: element.id ? element.id : "",
+                    class: element.className ? element.className : ""
+                },
+                children: []
+            };
+
+            // Avoid too many recursion issue
+            let i = 0;
+            let l = element.children.length;
+            let recurse2 = function (element, json, i, l) {
+                AssertInstOf(element, HTMLElement);
+
+                if (i == l) {
+                    return;
+                }
+                let childElement = element.children[i];
+                setTimeout(() => {
+                    if (childElement instanceof HTMLElement) {
+                        let childJson = recurse(childElement);
+                        json.children.push(childJson);
+                    }
+                    recurse2(element, json, i + 1, l);
+                }, 1);
+            };
+
+            // Add all child elements to the JSON object, using recursion.
+            recurse2(element, json, i, l);
+
+            return json;
+        };
+
+        return new HTMLElementType(recurse(element));
+    }
+}
+
