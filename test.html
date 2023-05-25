@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Test Page</title>
+
+</head>
+
+<body>
+    <script src="typesystem.js"></script>
+    <script>
+        let schema = {
+            "id": "number",
+            "name": "string",
+            "active": "boolean",
+            "details": {
+                "email": "string",
+                "age": "number"
+            },
+            "optionalField": {
+                "type": "string",
+                "optional": true
+            },
+            "tableau": ["number"],
+            "tableau2": ["string"]
+        };
+        let myJson = {
+            "id": 1,
+            "name": "John",
+            "active": true,
+            "details": {
+                "email": "john@example.com",
+                "age": 30
+            },
+            "tableau": [1, 2, 3],
+            "tableau2": ["a", "b", "c"],
+            // "optionalField" is missing, but that's okay because it's optional
+        };
+        if (CheckObjectAgainstSchema(myJson, schema) !== true) {
+            throw new Error("invalid response");
+        }
+
+        let userSchema = {
+            "name": "string",
+            "age": { "type": "number", "optional": true },
+            "address": { "type": "$addressSchema" }
+        };
+
+        let addressSchema = {
+            "street": "string",
+            "city": "string",
+            "state": "string",
+            "country": "string",
+            "zip": "string"
+        };
+
+        let referencedSchemas = {
+            "$addressSchema": addressSchema
+        };
+
+        let userObject = {
+            "name": "John Doe",
+            "age": 25,
+            "address": {
+                "street": "123 Main St",
+                "city": "Anytown",
+                "state": "Anystate",
+                "country": "USA",
+                "zip": "12345"
+            }
+        };
+        if (CheckObjectAgainstSchema(userObject, userSchema, referencedSchemas) !== true) {
+            throw new Error("invalid response");
+        }
+
+        userObject = {
+            "name": "John Doe",
+            "address": {
+                "city": "Anytown",
+                "state": "Anystate",
+                "country": "USA",
+                "zip": "12345"
+            }
+        };
+        if (CheckObjectAgainstSchema(userObject, userSchema, referencedSchemas) !== false) {
+            throw new Error("invalid response");
+        }
+
+        let htmlSchema = {
+            "tagName": "string",
+            "attributes": {
+                "id": "string",
+                "class": "string"
+            },
+            "children": {
+                "type": ["$htmlSchema"],
+                "optional": true,
+            }
+        };
+        let nodeWithChildren = {
+            "tagName": "div",
+            "attributes": {
+                "id": "",
+                "class": "className"
+            },
+            "children": [
+                {
+                    "tagName": "div",
+                    "attributes": {
+                        "id": "",
+                        "class": "className2"
+                    },
+                    "children": [
+                        {
+                            "tagName": "div",
+                            "attributes": {
+                                "id": "",
+                                "class": "className3"
+                            },
+                        },
+                    ],
+                },
+                {
+                    "tagName": "div",
+                    "attributes": {
+                        "id": "id1",
+                        "class": ""
+                    },
+                    "children": [
+
+                    ],
+                }
+            ],
+        };
+        if (CheckObjectAgainstSchema(nodeWithChildren, htmlSchema, {"$htmlSchema": htmlSchema}) !== true) {
+            throw new Error("invalid response");
+        }
+
+        let htmlNodeType = HTMLElementType.FromNode(document.querySelector("html"));
+
+        console.log("All Tests Succeeded!");
+    </script>
+</body>
+
+</html>
