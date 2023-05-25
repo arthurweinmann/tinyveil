@@ -1,3 +1,36 @@
+/*
+This library provides a comprehensive suite of utility functions for type checking in vanilla JavaScript without the need for any additional 
+frameworks or a compiler. 
+It offers an immediate and proactive way of validating data types during the development process, which can be particularly useful in a language 
+like JavaScript where types can be loosely defined It is very simple and aims at staying simple to use.These helper functions throw errors 
+immediately when a type mismatch or invalid parameter is detected, facilitating early error discovery and making debugging easier. 
+Furthermore, there's a function to verify if a given JSON object matches a specific schema, a feature which is quite useful when working 
+with JSON data from an API. It makes debugging frontend to backend communication and inconsistencies easier. 
+This library is a simple way to enforce strict type checking with zero maintenance costs.
+
+MIT License
+
+Copyright (c) 2023 Arthur Weinmann
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 function AssertInstOf(src, target) {
     if (!(src instanceof target)) {
         throw new Error("invalid parameter");
