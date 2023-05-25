@@ -11,6 +11,7 @@
 </head>
 
 <body>
+    <div id="test">Test is running, take a look in the console..</div>
     <script src="typesystem.js"></script>
     <script>
         let schema = {
@@ -136,11 +137,31 @@
                 }
             ],
         };
-        if (CheckObjectAgainstSchema(nodeWithChildren, htmlSchema, {"$htmlSchema": htmlSchema}) !== true) {
+        if (CheckObjectAgainstSchema(nodeWithChildren, htmlSchema, { "$htmlSchema": htmlSchema }) !== true) {
             throw new Error("invalid response");
         }
 
         let htmlNodeType = HTMLElementType.FromNode(document.querySelector("html"));
+
+        let newelem = htmlNodeType.ToHTML(
+            { // html
+                children: [
+                    null, // skip the head
+                    { // body
+                        children: [
+                            { // div id test
+                                innerText: "Even after replacement, the test is still running, take a look in the console.."
+                            },
+                        ]
+                    }
+                ]
+            },
+        );
+        if (newelem.children.length != 1 || 
+        newelem.children[0].children.length != 1 ||
+        newelem.children[0].children[0].innerText !== 'Even after replacement, the test is still running, take a look in the console..') {
+            throw new Error("invalid response");
+        }
 
         console.log("All Tests Succeeded!");
     </script>

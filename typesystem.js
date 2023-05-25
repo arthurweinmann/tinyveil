@@ -214,6 +214,7 @@ class HTMLElementType {
      * @param {Object<string, any>} htmlSchema 
      */
     constructor(htmlSchema) {
+        AssertTypeOf(htmlSchema, "object");
         if (!CheckObjectAgainstSchema(htmlSchema, NATIVE_SCHEMAS["$HTML_ELEMENT"], NATIVE_SCHEMAS)) {
             throw new Error("invalid parameter");
         }
@@ -231,13 +232,50 @@ class HTMLElementType {
     }
 
     /**
-     * 
-     * @param {Object<string, any>} fromRecursiveAttributes 
+     * @template {{innerText: string, children: Array<attr>}} attr
+     * @param {Object<string, attr>} fromRecursiveAttributes 
      * @return {HTMLElement}
      */
     ToHTML(fromRecursiveAttributes) {
-        // TODO
-        return null;
+        return this.#_tohtml(fromRecursiveAttributes, this.Schema);
+    }
+
+    #_tohtml(fromRecursiveAttributes, schema) {
+        AssertTypeOf(fromRecursiveAttributes, "object");
+        AssertTypeOf(schema, "object");
+
+        // Create a new element based on the tagName
+        let newElement = document.createElement(schema.tagName);
+
+        // Set the element's id and class if they're present in the schema
+        if (schema.attributes.id) {
+            newElement.id = schema.attributes.id;
+        }
+
+        if (schema.attributes.class) {
+            newElement.className = schema.attributes.class;
+        }
+
+        if (fromRecursiveAttributes.innerText) {
+            newElement.innerText = fromRecursiveAttributes.innerText;
+        }
+
+        // Recurse into children, if any
+        if (Array.isArray(fromRecursiveAttributes.children)) {
+            if (!Array.isArray(schema.children) || fromRecursiveAttributes.children.length > schema.children.length) {
+                console.log(schema.children, fromRecursiveAttributes.children, !Array.isArray(schema.children), fromRecursiveAttributes.children.length, schema.children.length);
+                throw new Error("the provided recursive attributes does not follow this html type schema");
+            }
+
+            for (let i = 0; i < fromRecursiveAttributes.children.length; i++) {
+                if (fromRecursiveAttributes.children[i] !== null) {
+                    let childElement = this.#_tohtml(fromRecursiveAttributes.children[i], schema.children[i]);
+                    newElement.appendChild(childElement);
+                }
+            }
+        }
+
+        return newElement;
     }
 
     /**
@@ -248,50 +286,42 @@ class HTMLElementType {
     static FromNode(element) {
         AssertInstOf(element, HTMLElement);
 
-        /**
-         * 
-         * @param {HTMLElement} elem 
-         * @return {Object<string, any>}
-         */
-        let recurse = function (element) {
-            AssertInstOf(element, HTMLElement);
+        let queue = [{ element: element, parentJson: null }];
+
+        let rootJson;
+        while (queue.length > 0) {
+            let current = queue.shift();
+            let currentElement = current.element;
+            let parentJson = current.parentJson;
 
             // Initialize the JSON object for this element.
             let json = {
-                tagName: element.tagName.toLowerCase(),
+                tagName: currentElement.tagName.toLowerCase(),
                 attributes: {
-                    id: element.id ? element.id : "",
-                    class: element.className ? element.className : ""
+                    id: currentElement.id ? currentElement.id : "",
+                    class: currentElement.className ? currentElement.className : ""
                 },
                 children: []
             };
 
-            // Avoid too many recursion issue
-            let i = 0;
-            let l = element.children.length;
-            let recurse2 = function (element, json, i, l) {
-                AssertInstOf(element, HTMLElement);
+            if (parentJson !== null) {
+                parentJson.children.push(json);
+            } else {
+                rootJson = json;
+            }
 
-                if (i == l) {
-                    return;
+            // Loop through all children of the current element
+            for (let i = 0; i < currentElement.children.length; i++) {
+                let childElement = currentElement.children[i];
+                if (childElement instanceof HTMLElement) {
+                    queue.push({ element: childElement, parentJson: json });
                 }
-                let childElement = element.children[i];
-                setTimeout(() => {
-                    if (childElement instanceof HTMLElement) {
-                        let childJson = recurse(childElement);
-                        json.children.push(childJson);
-                    }
-                    recurse2(element, json, i + 1, l);
-                }, 1);
-            };
+            }
+        }
 
-            // Add all child elements to the JSON object, using recursion.
-            recurse2(element, json, i, l);
-
-            return json;
-        };
-
-        return new HTMLElementType(recurse(element));
+        return new HTMLElementType(rootJson);
     }
+
+
 }
 
