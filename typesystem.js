@@ -232,16 +232,25 @@ class HTMLElementType {
     }
 
     /**
-     * @template {{innerText: string, children: Array<attr>}} attr
-     * @param {Object<string, attr>} fromRecursiveAttributes 
+     * @template {{innerText: string}} attr
+     * @param {Object<string, attr>} fromContent 
      * @return {HTMLElement}
      */
-    ToHTML(fromRecursiveAttributes) {
-        return this.#_tohtml(fromRecursiveAttributes, this.Schema);
+    ToHTML(fromContent) {
+        AssertTypeOf(fromContent, "object");
+
+        var htmlnode = this.#_tohtml(this.Schema);
+
+        for (const [query, attrs] of Object.entries(fromContent)) {
+            if (typeof attrs.innerText === 'string') {
+                htmlnode.querySelector(query).innerText = attrs.innerText;
+            }
+        }
+
+        return htmlnode;
     }
 
-    #_tohtml(fromRecursiveAttributes, schema) {
-        AssertTypeOf(fromRecursiveAttributes, "object");
+    #_tohtml(schema) {
         AssertTypeOf(schema, "object");
 
         // Create a new element based on the tagName
@@ -256,20 +265,11 @@ class HTMLElementType {
             newElement.className = schema.attributes.class;
         }
 
-        if (fromRecursiveAttributes.innerText) {
-            newElement.innerText = fromRecursiveAttributes.innerText;
-        }
-
         // Recurse into children, if any
-        if (Array.isArray(fromRecursiveAttributes.children)) {
-            if (!Array.isArray(schema.children) || fromRecursiveAttributes.children.length > schema.children.length) {
-                console.log(schema.children, fromRecursiveAttributes.children, !Array.isArray(schema.children), fromRecursiveAttributes.children.length, schema.children.length);
-                throw new Error("the provided recursive attributes does not follow this html type schema");
-            }
-
-            for (let i = 0; i < fromRecursiveAttributes.children.length; i++) {
-                if (fromRecursiveAttributes.children[i] !== null) {
-                    let childElement = this.#_tohtml(fromRecursiveAttributes.children[i], schema.children[i]);
+        if (Array.isArray(schema.children)) {
+            for (let i = 0; i < schema.children.length; i++) {
+                if (schema.children[i] !== null) {
+                    let childElement = this.#_tohtml(schema.children[i]);
                     newElement.appendChild(childElement);
                 }
             }
@@ -321,7 +321,5 @@ class HTMLElementType {
 
         return new HTMLElementType(rootJson);
     }
-
-
 }
 

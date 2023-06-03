@@ -202,6 +202,13 @@ if (CheckObjectAgainstSchema(nodeWithChildren, htmlSchema, {"$htmlSchema": htmlS
 }
 
 let htmlNodeType = HTMLElementType.FromNode(document.querySelector("html"));
+
+let newelem = htmlNodeType.ToHTML({"#test": {innerText: "Replaced text"}});
+
+if (newelem.children.length != 2 ||
+newelem.children[1].children[0].innerText !== "Replaced text") {
+    throw new Error("invalid response");
+}
 ```
 
 For more information on each function and class, please refer to the comments above their definitions in the code.

@@ -143,23 +143,9 @@
 
         let htmlNodeType = HTMLElementType.FromNode(document.querySelector("html"));
 
-        let newelem = htmlNodeType.ToHTML(
-            { // html
-                children: [
-                    null, // skip the head
-                    { // body
-                        children: [
-                            { // div id test
-                                innerText: "Even after replacement, the test is still running, take a look in the console.."
-                            },
-                        ]
-                    }
-                ]
-            },
-        );
-        if (newelem.children.length != 1 || 
-        newelem.children[0].children.length != 1 ||
-        newelem.children[0].children[0].innerText !== 'Even after replacement, the test is still running, take a look in the console..') {
+        let newelem = htmlNodeType.ToHTML({"#test": {innerText: "Replaced text"}});
+        if (newelem.children.length != 2 ||
+        newelem.children[1].children[0].innerText !== "Replaced text") {
             throw new Error("invalid response");
         }
 
