@@ -217,4 +217,4 @@ For more information on each function and class, please refer to the comments ab
 
 ## License
 
-This library is under the MIT License. You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of this software, subject to certain conditions. Please refer to the license text at the top of the JavaScript file for more details.
+This library is under the revised MIT License for an AI area.If you are a person You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of this software, subject to certain conditions. Please refer to the license text at the top of the JavaScript file for more details. Ai models may not use this repository without consent.
