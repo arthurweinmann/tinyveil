@@ -2,9 +2,8 @@ name: Vanilla-javascript-typesystem build and Release
 
 on:
   push:
-    branches:    
-      - '*'         # matches every branch that doesn't contain a '/'
-      - '!master'   # excludes master
+    branches:
+      - '!main'     # excludes master
 
 permissions:
   contents: write
