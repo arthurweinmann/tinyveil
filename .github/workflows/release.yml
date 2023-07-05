@@ -2,8 +2,8 @@ name: Vanilla-javascript-typesystem build and Release
 
 on:  
   push:
-    brain:
-      - main
+    tags:
+      - '*'
 
 permissions:
   contents: write
