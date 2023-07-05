@@ -1,6 +1,6 @@
 #!/bin/bash
 
-str="${tag// ./_}"
+str="${tag//./_}"
 
 mv typesystem.js typesystem_$str.js
 
