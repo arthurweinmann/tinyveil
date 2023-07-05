@@ -3,7 +3,7 @@ name: Vanilla-javascript-typesystem build and Release
 on:
   push:
     branches:
-      - '!main'     # excludes master
+      - 'v*'
 
 permissions:
   contents: write
