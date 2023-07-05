@@ -1,10 +1,6 @@
 #!/bin/bash
 
-tag=${{  github.ref_name }}
-
 str="${tag// ./_}"
-
-GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
 mv typesystem.js typesystem_$str.js
 

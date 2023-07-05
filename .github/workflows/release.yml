@@ -17,4 +17,7 @@ jobs:
 
       - name: Run release script
         run: ./.github/scripts/release.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: github.ref_name
         shell: bash
