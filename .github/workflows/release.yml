@@ -1,4 +1,4 @@
-name: Vanilla-javascript-typesystem build and Release
+name: Tinyveil build and Release
 
 on:
   push:

@@ -1,14 +1,3 @@
-/*
-This library provides a comprehensive suite of utility functions for type checking in vanilla JavaScript without the need for any additional 
-frameworks or a compiler. 
-It offers an immediate and proactive way of validating data types during the development process, which can be particularly useful in a language 
-like JavaScript where types can be loosely defined It is very simple and aims at staying simple to use.These helper functions throw errors 
-immediately when a type mismatch or invalid parameter is detected, facilitating early error discovery and making debugging easier. 
-Furthermore, there's a function to verify if a given JSON object matches a specific schema, a feature which is quite useful when working 
-with JSON data from an API. It makes debugging frontend to backend communication and inconsistencies easier. 
-This library is a simple way to enforce strict type checking with zero maintenance costs.
-*/
-
 function AssertInstOf(src, target) {
     if (!(src instanceof target)) {
         throw new Error("invalid parameter");
@@ -301,3 +290,150 @@ class HTMLElementType {
     }
 }
 
+class WebsocketAPI {
+    /**
+     * 
+     * @param {string} url 
+     */
+    constructor(url) {
+        AssertTypeOf(url, 'string');
+
+        this.socket = null;
+        this.requestbuffer = [];
+        this.requestCallbacks = {};
+        this.routes = {};
+        this.referencedSchemas = {};
+        this.requestidincrement = 0;
+        this.address = url;
+
+        this.opened = false;
+        this.restarting = false;
+
+        this.#start();
+    }
+
+    #start() {
+        if (this.opened || this.restarting) {
+            return;
+        }
+
+        this.restarting = true;
+
+        let that = this;
+
+        this.socket = new WebSocket(this.address);
+
+        this.socket.addEventListener('open', (event) => {
+            that.opened = true;
+            that.restarting = false;
+
+            for (let i = 0; i < that.requestbuffer.length; i++) {
+                // TODO: send
+            }
+        });
+
+        this.socket.addEventListener('message', (event) => {
+            that.#onmessage(event);
+        });
+
+        this.socket.addEventListener('error', (event) => {
+            if (that.restarting) {
+                that.restarting = false;
+
+                console.log("server connection error:", event);
+                console.log("reconnecting..");
+
+                that.#close();
+            }
+        });
+
+        this.socket.addEventListener('close', (event) => {
+            if (that.restarting) {
+                that.restarting = false;
+
+                console.log("server connection closed:", event);
+                console.log("reconnecting..");
+
+                that.#close();
+            }
+        });
+    }
+
+    #close() {
+        if (this.opened) {
+            this.opened = false;
+            this.socket.close();
+            this.socket = null;
+            for (const [_, cb] of Object.entries(this.requestCallbacks)) {
+                cb(new Err("lostConnection", "we lost connection with the server"));
+            }
+            this.requestCallbacks = {};
+        }
+        setTimeout(() => { this.#start(); }, 5000);
+    }
+
+    #onmessage(event) {
+        let resp;
+        try {
+            resp = JSON.parse(event.data);
+        } catch (e) {
+            console.log("Could not JSON parse message:", e, event);
+            return;
+        }
+
+        if (resp.requestid === undefined || typeof resp.requestid !== 'number') {
+            console.log("Received message from the backend without a requestid:", resp);
+            return;
+        }
+
+        if (resp.payload === undefined || typeof resp.payload !== 'object') {
+            console.log("Received message from the backend without an object payload:", resp);
+            return;
+        }
+
+        let definition = this._requestCallbacks[resp.requestid];
+        delete this._requestCallbacks[resp.requestid];
+    }
+
+    AddReferenceSchema(name, referencedSchema) {
+        this.referencedSchemas[name] = referencedSchema;
+    }
+
+    CreateRoute(name, requestType, responseType) {
+        this.routes[name] = {
+            "requestType": requestType,
+            "responseType": responseType,
+        }
+    }
+
+    Send(routename, message, cb) {
+        CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.referencedSchemas);
+
+        var definition = {
+            "routename": routename,
+            "message": message,
+            "cb": cb
+        };
+
+        if (!this.opened) {
+            this.requestbuffer.push(definition);
+            return;
+        }
+
+        let payload = {
+            "requestid": (this.requestidincrement++),
+            "message": message
+        };
+
+        this.requestCallbacks[payload.requestid] = definition;
+
+        // fail fast
+        var str = JSON.stringify(payload);
+
+        try {
+            this.socket.send(str);
+        } catch (e) {
+            this.#close();
+        }
+    }
+}
