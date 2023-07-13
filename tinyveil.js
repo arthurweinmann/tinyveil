@@ -6,9 +6,25 @@ function AssertInstOf(target, ...src) {
     }
 }
 
+function AssertNullOrInstOf(target, ...src) {
+    for (let i = 0; i < src.length; i++) {
+        if (src[i] !== null && !(src[i] instanceof target)) {
+            throw new Error("invalid parameter " + i + ": " + src[i]);
+        }
+    }
+}
+
 function AssertTypeOf(t, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (typeof src[i] !== t) {
+            throw new Error("invalid parameter " + i + ": " + typeof src);
+        }
+    }
+}
+
+function AssertNullOrTypeOf(t, ...src) {
+    for (let i = 0; i < src.length; i++) {
+        if (src[i] !== null && typeof src[i] !== t) {
             throw new Error("invalid parameter " + i + ": " + typeof src);
         }
     }
