@@ -1,6 +1,16 @@
-function AssertInstOf(src, target) {
-    if (!(src instanceof target)) {
-        throw new Error("invalid parameter");
+function AssertInstOf(target, ...src) {
+    for (let i = 0; i < src.length; i++) {
+        if (!(src[i] instanceof target)) {
+            throw new Error("invalid parameter " + i + ": " + src[i]);
+        }
+    }
+}
+
+function AssertTypeOf(t, ...src) {
+    for (let i = 0; i < src.length; i++) {
+        if (typeof src[i] !== t) {
+            throw new Error("invalid parameter " + i + ": " + typeof src);
+        }
     }
 }
 
@@ -8,12 +18,6 @@ function AssertEnum(src, possibleValues) {
     AssertInstOf(possibleValues, Array);
     if (!possibleValues.includes(src)) {
         throw new Error("invalid parameter");
-    }
-}
-
-function AssertTypeOf(src, t) {
-    if (typeof src !== t) {
-        throw new Error("invalid parameter " + typeof src);
     }
 }
 

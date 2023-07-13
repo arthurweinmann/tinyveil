@@ -12,11 +12,11 @@ Maybe we do not need another framework but a typesystem on the side.
 
 Here's a brief rundown of the features available in this library:
 
-- `AssertInstOf(src, target)`: Asserts that the `src` is an instance of `target`. If not, it throws an error.
+- `AssertInstOf(target, ...src)`: Asserts that the `src` is an instance of `target`. If not, it throws an error.
 
 - `AssertEnum(src, possibleValues)`: Asserts that `src` is one of the `possibleValues`. If not, it throws an error.
 
-- `AssertTypeOf(src, t)`: Asserts that the type of `src` matches `t`. If not, it throws an error.
+- `AssertTypeOf(t, ...src)`: Asserts that the type of `src` matches `t`. If not, it throws an error.
 
 - `AssertOneOrTheOtherString(...n)`: Asserts that there is only one non-empty string among the input parameters. If not, it throws an error.
 
@@ -64,8 +64,8 @@ class User {
      * @param {string} role 
      */
     constructor(name, age, role) {
-        AssertTypeOf(name, 'string');
-        AssertTypeOf(age, 'number');
+        AssertTypeOf('string', name);
+        AssertTypeOf('number', age);
         AssertEnum(role, roles);
 
         this.name = name;
