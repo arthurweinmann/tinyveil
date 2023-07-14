@@ -1,3 +1,5 @@
+class NullElement { }
+
 function AssertInstOf(target, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (!(src[i] instanceof target)) {
@@ -70,7 +72,7 @@ function AssertTypeOfOR(src, ...t) {
 
 function AssertInstOfOR(src, ...t) {
     for (let i = 0; i < t.length; i++) {
-        if (src instanceof t[i]) {
+        if ((src === null && t[i] instanceof NullElement) || src instanceof t[i]) {
             return;
         }
     }
