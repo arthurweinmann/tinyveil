@@ -15,7 +15,7 @@ function AssertNullOrInstOf(target, ...src) {
 }
 
 function AssertComplexInstOf(conditions, ...src) {
-    AssertTypeOf('array', conditions);
+    AssertInstOf(Array, conditions);
     for (let i = 0; i < conditions.length; i++) {
         for (let j = 0; j < src.length; j++) {
             AssertInstOfOR(src[i], ...conditions[i].OR);
