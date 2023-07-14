@@ -31,7 +31,7 @@ function AssertNullOrTypeOf(t, ...src) {
 }
 
 function AssertEnum(src, possibleValues) {
-    AssertInstOf(possibleValues, Array);
+    AssertInstOf(Array, possibleValues);
     if (!possibleValues.includes(src)) {
         throw new Error("invalid parameter");
     }
@@ -40,7 +40,7 @@ function AssertEnum(src, possibleValues) {
 function AssertOneOrTheOtherString(...n) {
     let one = false
     for (let i = 0; i < n.length; i++) {
-        AssertTypeOf(n[i], 'string');
+        AssertTypeOf('string', n[i]);
         if (n[i].length > 0) {
             if (one) {
                 throw new Error("invalid parameters: only one non empty string supported");
@@ -97,8 +97,8 @@ function AssertArrayOfType(src, t) {
  * @returns 
  */
 function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
-    AssertTypeOf(obj, "object");
-    AssertTypeOf(schema, "object");
+    AssertTypeOf("object", obj);
+    AssertTypeOf("object", schema);
     AssertTypeOfOR(referencedSchemas, "object", "undefined");
 
     // Iterate over each property in the schema
@@ -201,7 +201,7 @@ class HTMLElementType {
      * @param {Object<string, any>} htmlSchema 
      */
     constructor(htmlSchema) {
-        AssertTypeOf(htmlSchema, "object");
+        AssertTypeOf("object", htmlSchema);
         if (!CheckObjectAgainstSchema(htmlSchema, NATIVE_SCHEMAS["$HTML_ELEMENT"], NATIVE_SCHEMAS)) {
             throw new Error("invalid parameter");
         }
@@ -224,7 +224,7 @@ class HTMLElementType {
      * @return {HTMLElement}
      */
     ToHTML(fromContent) {
-        AssertTypeOf(fromContent, "object");
+        AssertTypeOf("object", fromContent);
 
         var htmlnode = this.#_tohtml(this.Schema);
 
@@ -238,7 +238,7 @@ class HTMLElementType {
     }
 
     #_tohtml(schema) {
-        AssertTypeOf(schema, "object");
+        AssertTypeOf("object", schema);
 
         // Create a new element based on the tagName
         let newElement = document.createElement(schema.tagName);
@@ -267,11 +267,21 @@ class HTMLElementType {
 
     /**
      * 
+     * @param {string} htmlString 
+     * @return {HTMLElementType}
+     */
+    static FromString(htmlString) {
+        AssertTypeOf('string', htmlString);
+        return HTMLElementType.FromNode(CreateElementFromHTML(htmlString));
+    }
+
+    /**
+     * 
      * @param {HTMLElement} element 
      * @return {HTMLElementType}
      */
     static FromNode(element) {
-        AssertInstOf(element, HTMLElement);
+        AssertInstOf(HTMLElement, element);
 
         let queue = [{ element: element, parentJson: null }];
 
@@ -456,4 +466,14 @@ class WebsocketAPI {
             this.#close();
         }
     }
+}
+
+function CreateElementFromHTML(htmlString) {
+    AssertTypeOf('string', htmlString);
+
+    var div = document.createElement('div');
+    div.innerHTML = htmlString.trim();
+
+    // Change this to div.childNodes to support multiple top-level nodes.
+    return div.firstChild;
 }
