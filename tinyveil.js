@@ -20,7 +20,7 @@ function AssertComplexInstOf(conditions, ...src) {
     AssertInstOf(Array, conditions);
     for (let i = 0; i < conditions.length; i++) {
         for (let j = 0; j < src.length; j++) {
-            AssertInstOfOR(src[i], ...conditions[i].OR);
+            AssertInstOfOR(src[j], ...conditions[i].OR);
         }
     }
 }
