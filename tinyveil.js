@@ -14,6 +14,15 @@ function AssertNullOrInstOf(target, ...src) {
     }
 }
 
+function AssertComplexInstOf(conditions, ...src) {
+    AssertTypeOf('array', conditions);
+    for (let i = 0; i < conditions.length; i++) {
+        for (let j = 0; j < src.length; j++) {
+            AssertInstOfOR(src[i], ...conditions[i].OR);
+        }
+    }
+}
+
 function AssertTypeOf(t, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (typeof src[i] !== t) {
@@ -53,6 +62,15 @@ function AssertOneOrTheOtherString(...n) {
 function AssertTypeOfOR(src, ...t) {
     for (let i = 0; i < t.length; i++) {
         if (typeof src === t[i]) {
+            return;
+        }
+    }
+    throw new Error("invalid parameter " + typeof src);
+}
+
+function AssertInstOfOR(src, ...t) {
+    for (let i = 0; i < t.length; i++) {
+        if (src instanceof t[i]) {
             return;
         }
     }
