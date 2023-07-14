@@ -72,7 +72,7 @@ function AssertTypeOfOR(src, ...t) {
 
 function AssertInstOfOR(src, ...t) {
     for (let i = 0; i < t.length; i++) {
-        if ((src === null && t[i] instanceof NullElement) || src instanceof t[i]) {
+        if ((src === null && typeof t[i] === 'function' && t[i] instanceof NullElement) || src instanceof t[i]) {
             return;
         }
     }
