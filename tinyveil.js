@@ -500,3 +500,12 @@ function CreateElementFromHTML(htmlString) {
     // Change this to div.childNodes to support multiple top-level nodes.
     return div.firstChild;
 }
+
+function CreateManyElementsFromHTML(htmlString) {
+    AssertTypeOf('string', htmlString);
+
+    var div = document.createElement('div');
+    div.innerHTML = htmlString.trim();
+
+    return div.childNodes;
+}
