@@ -507,5 +507,12 @@ function CreateManyElementsFromHTML(htmlString) {
     var div = document.createElement('div');
     div.innerHTML = htmlString.trim();
 
-    return div.childNodes;
+    var ret = [];
+    for (let i = 0; i < div.childNodes.length; i++) {
+        if (!(childNodes[i] instanceof Text)) {
+            ret.push(childNodes[i]);
+        }
+    }
+
+    return ret;
 }
