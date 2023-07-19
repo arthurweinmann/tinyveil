@@ -1,5 +1,3 @@
-class NullElement { }
-
 const TINYVEIL_CUSTOM_TYPES_CHECKS = {
     "hexcolorcode": function(colorcode) {
         if (typeof colorcode !== 'string') {
@@ -37,7 +35,7 @@ function AssertComplexInstOf(conditions, ...src) {
 
 function AssertTypeOf(t, ...src) {
     let customtype = null;
-    if (TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== undefined) {
+    if (typeof t === 'string' && TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== undefined) {
         if (typeof TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== 'function') {
             throw new Error("tinyveil internal inconsistency error");
         }
@@ -48,6 +46,10 @@ function AssertTypeOf(t, ...src) {
             if (!customtype(src[i])) {
                 throw new Error("invalid parameter " + i + ": " + typeof src);
             }
+        } else if(t === null) {
+            if (src[i] !== null) {
+                throw new Error("invalid parameter " + i + ": " + typeof src);
+            }
         } else if (typeof src[i] !== t) {
             throw new Error("invalid parameter " + i + ": " + typeof src);
         }
@@ -56,7 +58,7 @@ function AssertTypeOf(t, ...src) {
 
 function AssertNullOrTypeOf(t, ...src) {
     let customtype = null;
-    if (TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== undefined) {
+    if (typeof t === 'string' && TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== undefined) {
         if (typeof TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== 'function') {
             throw new Error("tinyveil internal inconsistency error");
         }
@@ -97,11 +99,15 @@ function AssertOneOrTheOtherString(...n) {
 
 function AssertTypeOfOR(src, ...t) {
     for (let i = 0; i < t.length; i++) {
-        if (TINYVEIL_CUSTOM_TYPES_CHECKS[t[i]] !== undefined) {
+        if (typeof t[i] === 'string' && TINYVEIL_CUSTOM_TYPES_CHECKS[t[i]] !== undefined) {
             if (typeof TINYVEIL_CUSTOM_TYPES_CHECKS[t[i]] !== 'function') {
                 throw new Error("tinyveil internal inconsistency error");
             }
             if (TINYVEIL_CUSTOM_TYPES_CHECKS[t[i]](src)) {
+                return;
+            }
+        } else if (t[i] === null) {
+            if (src === null) {
                 return;
             }
         } else if (typeof src === t[i]) {
@@ -113,10 +119,11 @@ function AssertTypeOfOR(src, ...t) {
 
 function AssertInstOfOR(src, ...t) {
     for (let i = 0; i < t.length; i++) {
-        if (src === null && (t[i] instanceof NullElement)) {
-            return;
-        }
-        if (!(t[i] instanceof NullElement) && src instanceof t[i]) {
+        if (t[i] === null) {
+            if (src === null) {
+                return;
+            }
+        } else if (!(t[i] instanceof NullElement) && src instanceof t[i]) {
             return;
         }
     }
@@ -145,7 +152,7 @@ function AssertArrayOfType(src, t) {
     AssertArray(src);
 
     let customtype = null;
-    if (TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== undefined) {
+    if (typeof t === 'string' && TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== undefined) {
         if (typeof TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== 'function') {
             throw new Error("tinyveil internal inconsistency error");
         }
@@ -153,7 +160,11 @@ function AssertArrayOfType(src, t) {
     }
 
     for (let i = 0; i < src.length; i++) {
-        if (customtype !== null) {
+        if (t === null) {
+            if (src[i] !== null) {
+                throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
+            }
+        } else if (customtype !== null) {
             if (!customtype(src[i])) {
                 throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
             }
