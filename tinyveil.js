@@ -123,7 +123,7 @@ function AssertInstOfOR(src, ...t) {
             if (src === null) {
                 return;
             }
-        } else if (!(t[i] instanceof NullElement) && src instanceof t[i]) {
+        } else if (src instanceof t[i]) {
             return;
         }
     }
