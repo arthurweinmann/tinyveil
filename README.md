@@ -38,7 +38,7 @@ Here's a brief rundown of the features available in this library:
 
 ## Usage
 
-First, include typesystem.js in your project.
+First, include tinyveil.js in your project.
 
 Here is an example:
 
