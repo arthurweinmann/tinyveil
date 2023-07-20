@@ -1,9 +1,9 @@
 const TINYVEIL_CUSTOM_TYPES_CHECKS = {
-    "hexcolorcode": function(colorcode) {
+    "hexcolorcode": function (colorcode) {
         if (typeof colorcode !== 'string') {
             return false;
         }
-        var reg=/^#([0-9a-f]{3}){1,2}$/i;
+        var reg = /^#([0-9a-f]{3}){1,2}$/i;
         return reg.test(colorcode);
     }
 };
@@ -46,7 +46,7 @@ function AssertTypeOf(t, ...src) {
             if (!customtype(src[i])) {
                 throw new Error("invalid parameter " + i + ": " + typeof src);
             }
-        } else if(t === null) {
+        } else if (t === null) {
             if (src[i] !== null) {
                 throw new Error("invalid parameter " + i + ": " + typeof src);
             }
@@ -249,8 +249,17 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                         }
                     } else {
                         // If the types don't match, return false
-                        if (typeof item !== requiredType[0]) {
-                            console.log(`Incorrect type for array item: ${item}. Expected ${requiredType[0]}, got ${typeof item}`);
+                        if (typeof requiredType[0] === 'string' && requiredType[0].charAt(0) === "#") {
+                            let tmptype = referencedSchemas[requiredType[0]];
+                            if (tmptype === undefined) {
+                                throw new Error("could not find the class " + requiredType[0] + " referenced in root schema defintion"); // better to panic early for this error than returning false
+                            }
+                            if (!(obj[key] instanceof tmptype)) {
+                                console.log(`Incorrect class for property: ${key}. Expected ${tmptype}, got ${obj[key]}`);
+                                return false;
+                            }
+                        } else if (typeof obj[key] !== requiredType[0]) {
+                            console.log(`Incorrect type for property: ${key}. Expected ${requiredType[0]}, got ${typeof obj[key]}`);
                             return false;
                         }
                     }
@@ -258,7 +267,16 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             }
         } else {
             // If the types don't match, return false
-            if (typeof obj[key] !== requiredType) {
+            if (typeof requiredType === 'string' && requiredType.charAt(0) === "#") {
+                requiredType = referencedSchemas[requiredType];
+                if (requiredType === undefined) {
+                    throw new Error("could not find the class " + requiredType + " referenced in root schema defintion"); // better to panic early for this error than returning false
+                }
+                if (!(obj[key] instanceof requiredType)) {
+                    console.log(`Incorrect class for property: ${key}. Expected ${requiredType}, got ${obj[key]}`);
+                    return false;
+                }
+            } else if (typeof obj[key] !== requiredType) {
                 console.log(`Incorrect type for property: ${key}. Expected ${requiredType}, got ${typeof obj[key]}`);
                 return false;
             }
@@ -270,6 +288,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
 }
 
 const NATIVE_SCHEMAS = {
+    "#HTMLElement": HTMLElement, // the # identifies an instance of a class
     "$HTML_ELEMENT": {
         "tagName": "string",
         "attributes": {
