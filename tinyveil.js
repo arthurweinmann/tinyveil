@@ -50,6 +50,10 @@ function AssertTypeOf(t, ...src) {
             if (src[i] !== null) {
                 throw new Error("invalid parameter " + i + ": " + typeof src);
             }
+        } else if (t === undefined) {
+            if (src[i] !== undefined) {
+                throw new Error("invalid parameter " + i + ": " + typeof src);
+            }
         } else if (typeof src[i] !== t) {
             throw new Error("invalid parameter " + i + ": " + typeof src);
         }
@@ -70,6 +74,10 @@ function AssertNullOrTypeOf(t, ...src) {
                 if (!customtype(src[i])) {
                     throw new Error("invalid parameter " + i + ": " + typeof src);
                 }
+            } else if (t === undefined) {
+                if (src[i] !== undefined) {
+                    throw new Error("invalid parameter " + i + ": " + typeof src);
+                }
             } else if (typeof src[i] !== t) {
                 throw new Error("invalid parameter " + i + ": " + typeof src);
             }
@@ -84,6 +92,10 @@ function AssertEnum(src, possibleValues) {
     }
 }
 
+/**
+ * AssertOneOrTheOtherString throws an error if more than one string is not empty
+ * @param  {...string} n 
+ */
 function AssertOneOrTheOtherString(...n) {
     let one = false
     for (let i = 0; i < n.length; i++) {
@@ -108,6 +120,10 @@ function AssertTypeOfOR(src, ...t) {
             }
         } else if (t[i] === null) {
             if (src === null) {
+                return;
+            }
+        } else if (t[i] === undefined) {
+            if (src === undefined) {
                 return;
             }
         } else if (typeof src === t[i]) {
@@ -162,6 +178,10 @@ function AssertArrayOfType(src, t) {
     for (let i = 0; i < src.length; i++) {
         if (t === null) {
             if (src[i] !== null) {
+                throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
+            }
+        } else if (t === undefined) {
+            if (src[i] !== undefined) {
                 throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
             }
         } else if (customtype !== null) {

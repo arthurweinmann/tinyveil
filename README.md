@@ -213,6 +213,28 @@ if (newelem.children.length != 2 ||
 newelem.children[1].children[0].innerText !== "Replaced text") {
     throw new Error("invalid response");
 }
+
+// You can also check that fields are of a certain class instance, for example if we have the class Decimal:
+class MyJavascriptClass {
+    constructor() {}
+}
+
+CheckObjectAgainstSchema(point, {
+    x: "#MyJavascriptClass",
+    y: "#MyJavascriptClass"
+}, { "#MyJavascriptClass": MyJavascriptClass }); // use the # to identify classes provided in the reference parameter
+
+// To test an array and not a root object containing an array, for now the best way to do this is to put the array into a temporary object for the test as so:
+CheckObjectAgainstSchema({ result: result }, {
+   result: [
+       {
+           a: "number",
+           b: "number",
+           c: "string",
+           d: "string"
+       }
+   ], 
+{});
 ```
 
 For more information on each function and class, please refer to the comments above their definitions in the code.
