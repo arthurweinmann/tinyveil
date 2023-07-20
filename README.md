@@ -10,37 +10,15 @@ Maybe we do not need another framework but a typesystem on the side.
 
 ## Features
 
-Here's a brief rundown of the features available in this library:
-
-- `AssertInstOf(target, ...src)`: Asserts that the `src` is an instance of `target`. If not, it throws an error.
-
-- `AssertEnum(src, possibleValues)`: Asserts that `src` is one of the `possibleValues`. If not, it throws an error.
-
-- `AssertTypeOf(t, ...src)`: Asserts that the type of `src` matches `t`. If not, it throws an error.
-
-- `AssertOneOrTheOtherString(...n)`: Asserts that there is only one non-empty string among the input parameters. If not, it throws an error.
-
-- `AssertTypeOfOR(src, ...t)`: Asserts that the type of `src` is one of the types in `t`. If not, it throws an error.
-
-- `AssertNotEqual(src, target)`: Asserts that `src` and `target` are not equal. If they are equal, it throws an error.
-
-- `AssertEqual(src, target)`: Asserts that `src` and `target` are equal. If they are not equal, it throws an error.
-
-- `AssertArray(src)`: Asserts that `src` is an array. If it is not an array, it throws an error.
-
-- `AssertArrayOfType(src, t)`: Asserts that `src` is an array and all elements are of type `t`. If not, it throws an error.
-
-- `CheckObjectAgainstSchema(obj, schema, referencedSchemas)`: Checks an object `obj` against a schema `schema`, using `referencedSchemas` for type references.
-
-- `NATIVE_SCHEMAS`: A native schema used to define the structure of an HTML element.
-
-- `HTMLElementType`: A class that validates an HTML element against a schema, and can also convert an HTML element to its schema.
+- Javascript type assertions with some nice quirks
+- Object check against a type schema (for receiving response from backend apis for example)
+- An interesting alpha experiment of an HTML node type compiling to and from an HTMLElement recursively
 
 ## Usage
 
 First, include tinyveil.js in your project.
 
-Here is an example:
+Here are some examples:
 
 ```javascript
 const roles = ['admin', 'user', 'guest'];
