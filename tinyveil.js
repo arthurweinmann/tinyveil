@@ -194,6 +194,18 @@ function AssertArrayOfType(src, t) {
     }
 }
 
+/**
+ * Function to check Object against a type schema with the possibility to reference schemas as the type of one or more fields.
+ * 
+ * @param {Object<string, any>} obj 
+ * @param {Object<string, any>} schema
+ * @param {Object<string, Object<string, any>>|undefined} referencedSchemas 
+ */
+function AssertObjectSchema(obj, schema, referencedSchemas) {
+    if (!CheckObjectAgainstSchema) {
+        throw new Error("object does not respect schema");
+    }
+}
 
 
 /**
@@ -571,7 +583,10 @@ class WebsocketAPI {
     }
 
     Send(routename, message, cb) {
-        CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.referencedSchemas);
+        if (!CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.referencedSchemas)){
+            cb(new Err("backendInconsistent", "the backend returned an invalid message: " + JSON.stringify(message)));
+            return;
+        }
 
         var definition = {
             "routename": routename,
