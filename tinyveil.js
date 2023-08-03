@@ -211,6 +211,14 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
 
     // Iterate over each property in the schema
     for (let key in schema) {
+        // the key may be modified below in this iteration if it begins with .
+        let requiredType;
+        if (schema[key].type) {
+            requiredType = schema[key].type;
+        } else {
+            requiredType = schema[key];
+        }
+
         // If the Object doesn't have this property, check if it's optional
         if (!obj.hasOwnProperty(key)) {
             if (schema[key].optional) {
@@ -225,13 +233,6 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                 console.log(`Missing property: ${key}`);
                 return false;
             }
-        }
-
-        let requiredType;
-        if (schema[key].type) {
-            requiredType = schema[key].type;
-        } else {
-            requiredType = schema[key];
         }
 
         // If the required type is a reference a schema, substitute it
