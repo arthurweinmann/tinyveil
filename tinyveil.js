@@ -215,6 +215,12 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
         if (!obj.hasOwnProperty(key)) {
             if (schema[key].optional) {
                 continue; // If it's optional, skip the rest of the loop for this property
+            } else if (key.charAt(0) === ".") {
+                key = removeFirstCharacter(key);
+                if (obj[key] === undefined) {
+                    console.log(`Missing property: ${key}`);
+                    return false;
+                }
             } else {
                 console.log(`Missing property: ${key}`);
                 return false;
@@ -619,4 +625,18 @@ function CreateManyElementsFromHTML(htmlString) {
     }
 
     return ret;
+}
+
+
+// ------------------------------------------
+//                UTILS
+// ------------------------------------------
+
+function removeFirstCharacter(str) {
+    AssertTypeOf('string', str);
+    if (str.length > 0) {
+        return str.substring(1);
+    } else {
+        return '';
+    }
 }
