@@ -202,7 +202,7 @@ function AssertArrayOfType(src, t) {
  * @param {Object<string, Object<string, any>>|undefined} referencedSchemas 
  */
 function AssertObjectSchema(obj, schema, referencedSchemas) {
-    if (!CheckObjectAgainstSchema) {
+    if (!CheckObjectAgainstSchema(obj, schema, referencedSchemas)) {
         throw new Error("object does not respect schema");
     }
 }
