@@ -293,12 +293,12 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                             if (tmptype === undefined) {
                                 throw new Error("could not find the class " + requiredType[0] + " referenced in root schema defintion"); // better to panic early for this error than returning false
                             }
-                            if (!(obj[key] instanceof tmptype)) {
-                                console.log(`Incorrect class for property: ${key}. Expected ${tmptype}, got ${obj[key]}`);
+                            if (!(item instanceof tmptype)) {
+                                console.log(`Incorrect class for property: ${key}. Expected ${tmptype}, got ${item}`);
                                 return false;
                             }
-                        } else if (typeof obj[key] !== requiredType[0]) {
-                            console.log(`Incorrect type for property: ${key}. Expected ${requiredType[0]}, got ${typeof obj[key]}`);
+                        } else if (typeof item !== requiredType[0]) {
+                            console.log(`Incorrect type for property: ${key}. Expected ${requiredType[0]}, got ${typeof item}`);
                             return false;
                         }
                     }
