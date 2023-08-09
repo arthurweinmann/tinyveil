@@ -14,6 +14,19 @@ Maybe we do not need another framework but a typesystem on the side.
 - Object check against a type schema (for receiving response from backend apis for example)
 - An interesting alpha experiment of an HTML node type compiling to and from an HTMLElement recursively
 
+## Integrate with Makefile
+
+```Makefile
+.PHONY: fetch-tinyveil
+fetch-tinyveil: $(BUILDDIR)
+	cd $(CURDIR) && rm -f web/js/lib/tinyveil.js && cd $(BUILDDIR) && rm -rf tmp && mkdir tmp && cd tmp && \
+	git clone https://github.com/arthurweinmann/tinyveil.git && \
+	cd tinyveil && mv tinyveil.js $(CURDIR)/web/js/lib/ && cd $(BUILDDIR) && rm -rf tmp
+
+$(BUILDDIR):
+	@mkdir -p $(BUILDDIR)
+```
+
 ## Usage
 
 First, include tinyveil.js in your project.
