@@ -44,18 +44,20 @@ function AssertTypeOf(t, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (customtype !== null) {
             if (!customtype(src[i])) {
-                throw new Error("invalid parameter " + i + ": " + typeof src);
+                throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
             }
         } else if (t === null) {
             if (src[i] !== null) {
-                throw new Error("invalid parameter " + i + ": " + typeof src);
+                throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
             }
         } else if (t === undefined) {
             if (src[i] !== undefined) {
-                throw new Error("invalid parameter " + i + ": " + typeof src);
+                throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
             }
         } else if (typeof src[i] !== t) {
-            throw new Error("invalid parameter " + i + ": " + typeof src);
+            throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+        } else if (t === 'number' && isNaN(src[i])) {
+            throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
         }
     }
 }
@@ -72,14 +74,16 @@ function AssertNullOrTypeOf(t, ...src) {
         if (src[i] !== null) {
             if (customtype !== null) {
                 if (!customtype(src[i])) {
-                    throw new Error("invalid parameter " + i + ": " + typeof src);
+                    throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
                 }
             } else if (t === undefined) {
                 if (src[i] !== undefined) {
-                    throw new Error("invalid parameter " + i + ": " + typeof src);
+                    throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
                 }
             } else if (typeof src[i] !== t) {
-                throw new Error("invalid parameter " + i + ": " + typeof src);
+                throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+            } else if (t === 'number' && isNaN(src[i])) {
+                throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
             }
         }
     }
@@ -126,7 +130,7 @@ function AssertTypeOfOR(src, ...t) {
             if (src === undefined) {
                 return;
             }
-        } else if (typeof src === t[i]) {
+        } else if (typeof src === t[i] && (t[i] !== 'number' || !isNaN(src))) {
             return;
         }
     }
@@ -189,6 +193,8 @@ function AssertArrayOfType(src, t) {
                 throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
             }
         } else if (typeof src[i] !== t) {
+            throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
+        } else if (t === 'number' && isNaN(src[i])) {
             throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
         }
     }
@@ -300,6 +306,9 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                         } else if (typeof item !== requiredType[0]) {
                             console.log(`Incorrect type for property: ${key}. Expected ${requiredType[0]}, got ${typeof item}`);
                             return false;
+                        } else if (requiredType[0] === 'number' && isNaN(item)) {
+                            console.log(`Incorrect type for property: ${key}. Expected ${requiredType[0]}, got ${typeof item}`);
+                            return false;
                         }
                     }
                 }
@@ -316,6 +325,9 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                     return false;
                 }
             } else if (typeof obj[key] !== requiredType) {
+                console.log(`Incorrect type for property: ${key}. Expected ${requiredType}, got ${typeof obj[key]}`);
+                return false;
+            } else if (requiredType === 'number' && isNaN(obj[key])) {
                 console.log(`Incorrect type for property: ${key}. Expected ${requiredType}, got ${typeof obj[key]}`);
                 return false;
             }
