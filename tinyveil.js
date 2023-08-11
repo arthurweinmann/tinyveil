@@ -33,6 +33,24 @@ function AssertComplexInstOf(conditions, ...src) {
     }
 }
 
+function AssertStringStartsWith(prefix, ...strs) {
+    for (let i = 0; i < strs.length; i++) {
+        if (!strs[i].startsWith(prefix)) {
+            throw new Error("invalid parameter " + i + ": " + strs[i]);
+        }
+    }
+}
+
+function AssertStringStartsWithOr(str, ...prefixes) {
+    AssertTypeOf('string', str);
+    for (let i = 0; i < prefixes.length; i++) {
+        if (str.startsWith(prefixes[i])) {
+            return;
+        }
+    }
+    throw new Error("invalid parameter not starting with either " + prefixes.join(" or ") + ": " + str);
+}
+
 function AssertTypeOf(t, ...src) {
     let customtype = null;
     if (typeof t === 'string' && TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== undefined) {
@@ -340,7 +358,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
 
 const NATIVE_SCHEMAS = {
     "#HTMLElement": HTMLElement, // the # identifies an instance of a class
-    "$HTML_ELEMENT": {
+    "$HTML_ELEMENT": { // the $ identifies a schema that can be referenced in validation schemas
         "tagName": "string",
         "attributes": {
             "id": "string",
@@ -487,10 +505,21 @@ class WebsocketAPI {
         AssertTypeOf(url, 'string');
 
         this.socket = null;
+
+        /**
+         * @template {{routename:string, message:Object, cb:function}} request
+         * @type {Array<request>}
+         */
         this.requestbuffer = [];
+
+        /**
+         * @template {{routename:string, message:Object, cb:function}} request
+         * @type {Object<number, request>} Keys are request IDs
+         */
         this.requestCallbacks = {};
+
         this.routes = {};
-        this.referencedSchemas = {};
+        this.references = {};
         this.requestidincrement = 0;
         this.address = url;
 
@@ -515,8 +544,10 @@ class WebsocketAPI {
             that.opened = true;
             that.restarting = false;
 
-            for (let i = 0; i < that.requestbuffer.length; i++) {
-                // TODO: send
+            for (let request = that.requestbuffer.pop(); request !== undefined; request = that.requestbuffer.pop()) {
+                if (!that.Send(request.routename, request.message, request.cb)) {
+                    return;
+                }
             }
         });
 
@@ -553,7 +584,7 @@ class WebsocketAPI {
             this.socket.close();
             this.socket = null;
             for (const [_, cb] of Object.entries(this.requestCallbacks)) {
-                cb(new Err("lostConnection", "we lost connection with the server"));
+                cb(new Err("lostConnection", "we lost connection with the server"), null);
             }
             this.requestCallbacks = {};
         }
@@ -569,7 +600,7 @@ class WebsocketAPI {
             return;
         }
 
-        if (resp.requestid === undefined || typeof resp.requestid !== 'number') {
+        if (resp.order === undefined || typeof resp.order !== 'number') {
             console.log("Received message from the backend without a requestid:", resp);
             return;
         }
@@ -579,25 +610,53 @@ class WebsocketAPI {
             return;
         }
 
-        let definition = this._requestCallbacks[resp.requestid];
-        delete this._requestCallbacks[resp.requestid];
+        if (this._requestCallbacks[resp.order] === undefined) {
+            console.log("Could not find response callback: Either Received duplicate message from the backend with the same order number or backend inconsistency error:", resp);
+            return;
+        }
+
+        let definition = this._requestCallbacks[resp.order];
+        delete this._requestCallbacks[resp.order];
+
+        definition.cb(null, resp.payload);
     }
 
-    AddReferenceSchema(name, referencedSchema) {
-        this.referencedSchemas[name] = referencedSchema;
+    /**
+     * 
+     * @param {string} name e.g. #Decimal or $subschema
+     * @param {any} reference 
+     * @return {WebsocketAPI}
+     */
+    SetReference(name, reference) {
+        AssertStringStartsWithOr(name, "#", "$");
+        this.references[name] = reference;
+        return this;
     }
 
+    /**
+     * 
+     * @param {string} name 
+     * @param {Object} requestType 
+     * @param {Object} responseType 
+     * @return {WebsocketAPI}
+     */
     CreateRoute(name, requestType, responseType) {
+        AssertTypeOf('string', name);
+        AssertTypeOf('object', requestType, responseType);
         this.routes[name] = {
             "requestType": requestType,
             "responseType": responseType,
-        }
+        };
+        return this;
     }
 
     Send(routename, message, cb) {
-        if (!CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.referencedSchemas)){
-            cb(new Err("backendInconsistent", "the backend returned an invalid message: " + JSON.stringify(message)));
-            return;
+        if (this.routes[routename] === undefined) {
+            throw new Error("Route " + routename + " does not exist");
+        }
+        if (!CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.references)) {
+            cb(new Err("invalidMessageStructure", "The provided message: " + JSON.stringify(message) + " does not satisfy the set request type: " + JSON.stringify(this.routes[routename].requestType)), null);
+            return false;
         }
 
         var definition = {
@@ -608,15 +667,17 @@ class WebsocketAPI {
 
         if (!this.opened) {
             this.requestbuffer.push(definition);
-            return;
+            return false;
         }
 
         let payload = {
-            "requestid": (this.requestidincrement++),
+            "routename": routename,
+            "order": (this.requestidincrement++),
+            "idempotencyhash": CRC64(JSON.stringify({ routename: routename, message: message })),
             "message": message
         };
 
-        this.requestCallbacks[payload.requestid] = definition;
+        this.requestCallbacks[payload.order] = definition;
 
         // fail fast
         var str = JSON.stringify(payload);
@@ -626,6 +687,8 @@ class WebsocketAPI {
         } catch (e) {
             this.#close();
         }
+
+        return true
     }
 }
 
@@ -655,10 +718,18 @@ function CreateManyElementsFromHTML(htmlString) {
     return ret;
 }
 
-
 // ------------------------------------------
 //                UTILS
 // ------------------------------------------
+
+// This function finds all hexadecimal escape sequences and converts them to their ASCII representation
+function ReplaceHexCodesWithCharacters(str) {
+    str = str.toString();
+    str = str.replace(/%[0-9A-Fa-f]{2}/g, function (match) {
+        return String.fromCharCode(parseInt(match.slice(1), 16));
+    });
+    return str;
+}
 
 function removeFirstCharacter(str) {
     AssertTypeOf('string', str);
@@ -667,4 +738,101 @@ function removeFirstCharacter(str) {
     } else {
         return '';
     }
+}
+
+function generateTable() {
+    const POLY = BigInt('0xc96c5795d7870f42');
+    const table = [];
+
+    for (let i = 0; i < 8; i++) {
+        table[i] = [];
+    }
+
+    let crc = BigInt(0);
+
+    for (let i = 0; i < 256; i++) {
+        crc = BigInt(i);
+
+        for (let j = 0; j < 8; j++) {
+            if (crc & BigInt(1)) {
+                crc = POLY ^ (crc >> BigInt(1));
+            } else {
+                crc = crc >> BigInt(1);
+            }
+        }
+
+        table[0][i] = crc;
+    }
+
+    for (let i = 0; i < 256; i++) {
+        crc = table[0][i];
+
+        for (let j = 1; j < 8; j++) {
+            const index = Number(crc & BigInt(0xff));
+            crc = table[0][index] ^ (crc >> BigInt(8));
+            table[j][i] = crc;
+        }
+    }
+
+    return table;
+}
+
+// function StringToUtf8(string) {
+//     return ReplaceHexCodesWithCharacters(encodeURIComponent(string));
+// }
+
+// function StringToBytes(string) {
+//     const bytes = [];
+
+//     for (let index = 0; index < string.length; ++index) {
+//         bytes.push(string.charCodeAt(index));
+//     }
+
+//     return bytes;
+// }
+
+function StringToBytes(str) {
+    return new TextEncoder().encode(str);
+}
+
+const CRC64_ECMA_TABLE = generateTable();
+
+function CRC64(str) {
+    // const utf8String = StringToUtf8(string);
+    let bytes = StringToBytes(str);
+    let crc = ~BigInt(0) & BigInt('0xffffffffffffffff');
+
+    while (bytes.length > 8) {
+        crc ^=
+            BigInt(bytes[0]) |
+            (BigInt(bytes[1]) << BigInt(8)) |
+            (BigInt(bytes[2]) << BigInt(16)) |
+            (BigInt(bytes[3]) << BigInt(24)) |
+            (BigInt(bytes[4]) << BigInt(32)) |
+            (BigInt(bytes[5]) << BigInt(40)) |
+            (BigInt(bytes[6]) << BigInt(48)) |
+            (BigInt(bytes[7]) << BigInt(56));
+
+        crc =
+            TABLE[7][Number(crc & BigInt(0xff))] ^
+            TABLE[6][Number((crc >> BigInt(8)) & BigInt(0xff))] ^
+            TABLE[5][Number((crc >> BigInt(16)) & BigInt(0xff))] ^
+            TABLE[4][Number((crc >> BigInt(24)) & BigInt(0xff))] ^
+            TABLE[3][Number((crc >> BigInt(32)) & BigInt(0xff))] ^
+            TABLE[2][Number((crc >> BigInt(40)) & BigInt(0xff))] ^
+            TABLE[1][Number((crc >> BigInt(48)) & BigInt(0xff))] ^
+            TABLE[0][Number(crc >> BigInt(56))];
+
+        bytes = bytes.slice(8);
+    }
+
+    for (let i = 0; i < bytes.length; i++) {
+        const lower = Number(crc & BigInt(0xff));
+        const index = lower ^ bytes[i];
+        crc = TABLE[0][index] ^ (crc >> BigInt(8));
+    }
+
+    crc = ~crc & BigInt('0xffffffffffffffff');
+
+    return crc;
 }
