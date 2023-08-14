@@ -764,6 +764,19 @@ function CreateManyElementsFromHTML(htmlString) {
 //                UTILS
 // ------------------------------------------
 
+class Err {
+    /**
+     * 
+     * @param {string} code 
+     * @param {string} message 
+     */
+    constructor(code, message) {
+        AssertTypeOf('string', code, message);
+        this.Code = code;
+        this.Message = message;
+    }
+}
+
 // This function finds all hexadecimal escape sequences and converts them to their ASCII representation
 function ReplaceHexCodesWithCharacters(str) {
     str = str.toString();
