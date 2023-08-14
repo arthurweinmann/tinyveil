@@ -531,6 +531,8 @@ class WebsocketAPI {
         this.retryMaxDelay = 60000;
         this.retryCount = 0;
 
+        this.sessionID = null;
+
         this.#start();
     }
 
@@ -611,29 +613,45 @@ class WebsocketAPI {
         try {
             resp = JSON.parse(event.data);
         } catch (e) {
-            console.log("Could not JSON parse message:", e, event);
+            console.log("Could not JSON parse payload:", e, event);
             return;
         }
 
         if (resp.order === undefined || typeof resp.order !== 'number') {
-            console.log("Received message from the backend without a requestid:", resp);
+            console.log("Received payload from the backend without a requestid:", resp);
             return;
         }
 
-        if (resp.payload === undefined || typeof resp.payload !== 'object') {
-            console.log("Received message from the backend without an object payload:", resp);
+        if ((resp.message === undefined || typeof resp.message !== 'object') && (resp.error === undefined || typeof resp.error !== 'object')) {
+            console.log("Received payload from the backend without an object message or error:", resp);
             return;
+        }
+
+        if (resp.sessionid === undefined || typeof resp.sessionid !== 'string') {
+            console.log("Received payload from the backend without a sessionid:", resp);
+            return;
+        }
+        if (this.sessionID !== null && resp.sessionID !== this.sessionID) {
+            console.log("Received payload from the backend with an invalid sessionid different from " + this.sessionID + " :", resp);
+            return;
+        } else if (this.sessionID === null) {
+            this.sessionID = resp.sessionid;
         }
 
         if (this._requestCallbacks[resp.order] === undefined) {
-            console.log("Could not find response callback: Either Received duplicate message from the backend with the same order number or backend inconsistency error:", resp);
+            console.log("Could not find response callback: Either Received duplicate payload from the backend with the same order number or backend inconsistency error:", resp);
             return;
         }
 
         let definition = this._requestCallbacks[resp.order];
         delete this._requestCallbacks[resp.order];
 
-        definition.cb(null, resp.payload);
+        if (resp.error !== undefined) {
+            definition.cb(new Err(resp.error.code, resp.error.message), null);
+            return;
+        }
+
+        definition.cb(null, resp.message);
     }
 
     /**
@@ -688,9 +706,12 @@ class WebsocketAPI {
         let payload = {
             "routename": routename,
             "order": (this.requestidincrement++),
-            "idempotencyhash": CRC64(JSON.stringify({ routename: routename, message: message })),
+            // "idempotencyhash": CRC64(JSON.stringify({ routename: routename, message: message })),
             "message": message
         };
+        if (this.sessionID !== null) {
+            payload.sessionid = this.sessionID;
+        }
 
         this.requestCallbacks[payload.order] = definition;
 
