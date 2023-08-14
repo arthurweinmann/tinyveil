@@ -631,7 +631,7 @@ class WebsocketAPI {
             console.log("Received payload from the backend without a sessionid:", resp);
             return;
         }
-        if (this.sessionID !== null && resp.sessionID !== this.sessionID) {
+        if (this.sessionID !== null && resp.sessionid !== this.sessionID) {
             console.log("Received payload from the backend with an invalid sessionid different from " + this.sessionID + " :", resp);
             return;
         } else if (this.sessionID === null) {
