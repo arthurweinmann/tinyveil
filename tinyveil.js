@@ -651,20 +651,26 @@ class WebsocketAPI {
             return;
         }
 
+        if (!CheckObjectAgainstSchema(resp.message, this.routes[definition.routename].responseType, this.references)) {
+            cb(new Err("invalidMessageStructure", "The response received from the backend: " + JSON.stringify(resp.message) + " does not satisfy the set response type: " + JSON.stringify(this.routes[definition.routename].requestType)), null);
+            return false;
+        }
+
         definition.cb(null, resp.message);
     }
 
-    /**
-     * 
-     * @param {string} name e.g. #Decimal or $subschema
-     * @param {any} reference 
-     * @return {WebsocketAPI}
-     */
-    SetReference(name, reference) {
-        AssertStringStartsWithOr(name, "#", "$");
-        this.references[name] = reference;
-        return this;
-    }
+    // Not sure we need this one
+    // /**
+    //  * 
+    //  * @param {string} name e.g. #Decimal or $subschema
+    //  * @param {any} reference 
+    //  * @return {WebsocketAPI}
+    //  */
+    // SetReference(name, reference) {
+    //     AssertStringStartsWithOr(name, "#", "$");
+    //     this.references[name] = reference;
+    //     return this;
+    // }
 
     /**
      * 
