@@ -526,6 +526,11 @@ class WebsocketAPI {
         this.opened = false;
         this.restarting = false;
 
+        this.retryDelay = 5000;
+        this.retryBackoffFactor = 2;
+        this.retryMaxDelay = 60000;
+        this.retryCount = 0;
+
         this.#start();
     }
 
@@ -538,11 +543,20 @@ class WebsocketAPI {
 
         let that = this;
 
+        if (this.retryCount > 0) {
+            this.retryDelay *= this.retryBackoffFactor;
+            if (this.retryDelay > this.retryMaxDelay) {
+                this.retryDelay = this.retryMaxDelay;
+            }
+        }
+        this.retryCount++;
+
         this.socket = new WebSocket(this.address);
 
         this.socket.addEventListener('open', (event) => {
             that.opened = true;
             that.restarting = false;
+            that.retryDelay = 5000;
 
             for (let request = that.requestbuffer.pop(); request !== undefined; request = that.requestbuffer.pop()) {
                 if (!that.Send(request.routename, request.message, request.cb)) {
@@ -588,7 +602,8 @@ class WebsocketAPI {
             }
             this.requestCallbacks = {};
         }
-        setTimeout(() => { this.#start(); }, 5000);
+        let delay = (this.retryDelay / 10) * 9 + Math.random() * (this.retryDelay / 10);
+        setTimeout(() => { this.#start(); }, delay);
     }
 
     #onmessage(event) {
