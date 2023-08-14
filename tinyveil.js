@@ -638,13 +638,13 @@ class WebsocketAPI {
             this.sessionID = resp.sessionid;
         }
 
-        if (this._requestCallbacks[resp.order] === undefined) {
+        if (this.requestCallbacks[resp.order] === undefined) {
             console.log("Could not find response callback: Either Received duplicate payload from the backend with the same order number or backend inconsistency error:", resp);
             return;
         }
 
-        let definition = this._requestCallbacks[resp.order];
-        delete this._requestCallbacks[resp.order];
+        let definition = this.requestCallbacks[resp.order];
+        delete this.requestCallbacks[resp.order];
 
         if (resp.error !== undefined) {
             definition.cb(new Err(resp.error.code, resp.error.message), null);
