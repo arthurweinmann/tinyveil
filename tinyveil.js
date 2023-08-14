@@ -256,7 +256,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
         }
 
         // If the Object doesn't have this property, check if it's optional
-        if (!obj.hasOwnProperty(key)) {
+        if (!obj.hasOwnProperty(key) || obj[key] === undefined || obj[key] === null) {
             if (schema[key].optional) {
                 continue; // If it's optional, skip the rest of the loop for this property
             } else if (key.charAt(0) === ".") {
