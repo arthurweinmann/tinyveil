@@ -502,7 +502,7 @@ class WebsocketAPI {
      * @param {string} url 
      */
     constructor(url) {
-        AssertTypeOf(url, 'string');
+        AssertTypeOf('string', url);
 
         this.socket = null;
 
