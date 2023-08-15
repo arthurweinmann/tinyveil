@@ -279,6 +279,17 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             }
         }
 
+        let typeofcheck = function (target, requiredtype) {
+            if (typeof requiredtype === 'string' && requiredtype.startsWith('enum(')) {
+                let possibleValues = requiredtype.substring('enum('.length, requiredtype.length - 1).split(',').map(x => x.trim());
+                return possibleValues.includes(target);
+            }
+            if (typeof target === requiredtype) {
+                return true;
+            }
+            return false;
+        }
+
         // If the required type is an object, recurse into it
         if (typeof requiredType === "object" && !Array.isArray(requiredType)) {
             // If the corresponding Object property is not an object, return false
@@ -321,7 +332,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                                 console.log(`Incorrect class for property: ${key}. Expected ${tmptype}, got ${item}`);
                                 return false;
                             }
-                        } else if (typeof item !== requiredType[0]) {
+                        } else if (!typeofcheck(item, requiredType[0])) {
                             console.log(`Incorrect type for property: ${key}. Expected ${requiredType[0]}, got ${typeof item}`);
                             return false;
                         } else if (requiredType[0] === 'number' && isNaN(item)) {
@@ -342,7 +353,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                     console.log(`Incorrect class for property: ${key}. Expected ${requiredType}, got ${obj[key]}`);
                     return false;
                 }
-            } else if (typeof obj[key] !== requiredType) {
+            } else if (!typeofcheck(obj[key], requiredType)) {
                 console.log(`Incorrect type for property: ${key}. Expected ${requiredType}, got ${typeof obj[key]}`);
                 return false;
             } else if (requiredType === 'number' && isNaN(obj[key])) {
