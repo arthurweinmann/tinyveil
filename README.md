@@ -16,6 +16,20 @@ Furthermore, there's a function to verify if a given JSON object matches a speci
 
 This library is a simple way to enforce strict type checking with zero maintenance costs. 
 
+To illustrate why a library may be a better idea than a framework, here is how you would create an empty react application:
+
+```bash
+Arthur$ npx create-react-app my-app
+```
+
+We can then list the number of dependencies in this newly created empty react application without any feature other than what comes out of the box:
+
+```bash
+Arthur$ cd my-app
+Arthur$ npm ls --all | wc -l
+```
+
+There is more than 3000 dependencies in a blank react project! You did not even write a single line of code for your application yet and you already have much complexity, entropy and future maintenance cost out of the box.
 
 ## Features
 
