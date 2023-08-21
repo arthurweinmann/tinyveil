@@ -161,6 +161,10 @@ function AssertInstOfOR(src, ...t) {
             if (src === null) {
                 return;
             }
+        } else if (t[i] === undefined) {
+            if (src === undefined) {
+                return;
+            }
         } else if (src instanceof t[i]) {
             return;
         }
