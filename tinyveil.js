@@ -245,9 +245,13 @@ function AssertObjectSchema(obj, schema, referencedSchemas) {
  * @returns 
  */
 function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
-    AssertTypeOf("object", obj);
     AssertTypeOf("object", schema);
     AssertTypeOfOR(referencedSchemas, "object", "undefined");
+
+    if (typeof obj !== 'object' || obj === null || obj === undefined) {
+        console.log("Invalid object to check:", obj);
+        return false;
+    }
 
     // Iterate over each property in the schema
     for (let key in schema) {
