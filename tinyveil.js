@@ -713,7 +713,7 @@ class WebsocketAPI {
             throw new Error("Route " + routename + " does not exist");
         }
         if (!CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.references)) {
-            cb(new Err("invalidMessageStructure", "The provided message: " + JSON.stringify(message) + " does not satisfy the set request type: " + JSON.stringify(this.routes[routename].requestType)), null);
+            cb(new Err("invalidMessageStructure", "The provided message: " + JSON.stringify(message) + " does not satisfy the set request type: " + JSON.stringify(this.routes[routename].requestType)) + " for route " + routename, null);
             return false;
         }
 
