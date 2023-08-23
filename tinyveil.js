@@ -671,7 +671,7 @@ class WebsocketAPI {
         }
 
         if (!CheckObjectAgainstSchema(resp.message, this.routes[definition.routename].responseType, this.references)) {
-            definition.cb(new Err("invalidMessageStructure", "The response received from the backend: " + JSON.stringify(resp.message) + " does not satisfy the set response type: " + JSON.stringify(this.routes[definition.routename].requestType)), null);
+            definition.cb(new Err("invalidMessageStructure", "The response received from the backend: " + JSON.stringify(resp.message) + " does not satisfy the set response type: " + JSON.stringify(this.routes[definition.routename].requestType)) + " for route " + routename, null);
             return false;
         }
 
