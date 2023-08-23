@@ -62,20 +62,20 @@ function AssertTypeOf(t, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (customtype !== null) {
             if (!customtype(src[i])) {
-                throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                throw new Error("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
             }
         } else if (t === null) {
             if (src[i] !== null) {
-                throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                throw new Error("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
             }
         } else if (t === undefined) {
             if (src[i] !== undefined) {
                 throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
             }
-        } else if (typeof src[i] !== t) {
-            throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+        } else if (src[i] === null || src[i] === undefined || typeof src[i] !== t) { // typeof null is "object" and typeof undefined is "undefined"
+            throw new Error("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
         } else if (t === 'number' && isNaN(src[i])) {
-            throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+            throw new Error("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
         }
     }
 }
