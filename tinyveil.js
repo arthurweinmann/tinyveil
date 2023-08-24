@@ -573,7 +573,14 @@ class WebsocketAPI {
         }
         this.retryCount++;
 
-        this.socket = new WebSocket(this.address);
+        try {
+            this.socket = new WebSocket(this.address);
+        } catch(e) {
+            that.restarting = false;
+            console.log("We could not establish websocket to backend:", e);
+            that.#close();
+            return;
+        }
 
         this.socket.addEventListener('open', (event) => {
             that.opened = true;
@@ -594,10 +601,7 @@ class WebsocketAPI {
         this.socket.addEventListener('error', (event) => {
             if (that.opened) {
                 that.restarting = false;
-
                 console.log("server connection error:", event);
-                console.log("reconnecting..");
-
                 that.#close();
             }
         });
@@ -605,10 +609,7 @@ class WebsocketAPI {
         this.socket.addEventListener('close', (event) => {
             if (that.opened) {
                 that.restarting = false;
-
                 console.log("server connection closed:", event);
-                console.log("reconnecting..");
-
                 that.#close();
             }
         });
@@ -625,6 +626,7 @@ class WebsocketAPI {
             this.requestCallbacks = {};
         }
         let delay = (this.retryDelay / 10) * 9 + Math.random() * (this.retryDelay / 10);
+        console.log(`trying reconnection in ${(delay/1000).toFixed(2)} seconds..`);
         setTimeout(() => { this.#start(); }, delay);
     }
 
