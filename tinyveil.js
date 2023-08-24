@@ -270,11 +270,11 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             } else if (key.charAt(0) === ".") {
                 key = removeFirstCharacter(key);
                 if (obj[key] === undefined) {
-                    console.log(`Missing property: ${key} in object ${JSON.stringify(obj)} having to satisfy schema ${JSON.stringify(schema)}`);
+                    console.log(`Missing property: ${key} in object`, obj, `having to satisfy schema`, schema);
                     return false;
                 }
             } else {
-                console.log(`Missing property: ${key} in object ${JSON.stringify(obj)} having to satisfy schema ${JSON.stringify(schema)}`);
+                console.log(`Missing property: ${key} in object`, obj, `having to satisfy schema`, schema);
                 return false;
             }
         }
