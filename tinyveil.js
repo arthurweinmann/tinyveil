@@ -785,6 +785,14 @@ class Err {
         this.Code = code;
         this.Message = message;
     }
+
+    toString() {
+        return "Error(" + this.Code + "): " + this.Message;
+    }
+
+    toJSON() {
+        return { code: this.Code, message: this.Message };
+    }
 }
 
 // This function finds all hexadecimal escape sequences and converts them to their ASCII representation
