@@ -592,6 +592,8 @@ class WebsocketAPI {
                     return;
                 }
             }
+
+            console.log("server connection established successfully");
         });
 
         this.socket.addEventListener('message', (event) => {
@@ -620,8 +622,8 @@ class WebsocketAPI {
             this.opened = false;
             this.socket.close();
             this.socket = null;
-            for (const [_, cb] of Object.entries(this.requestCallbacks)) {
-                cb(new Err("lostConnection", "we lost connection with the server"), null);
+            for (const [_, definition] of Object.entries(this.requestCallbacks)) {
+                definition.cb(new Err("lostConnection", "we lost connection with the server"), null);
             }
             this.requestCallbacks = {};
         }
