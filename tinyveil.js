@@ -599,7 +599,7 @@ class WebsocketAPI {
         });
 
         this.socket.addEventListener('error', (event) => {
-            if (that.opened) {
+            if (that.opened || that.restarting) {
                 that.restarting = false;
                 console.log("server connection error:", event);
                 that.#close();
@@ -607,7 +607,7 @@ class WebsocketAPI {
         });
 
         this.socket.addEventListener('close', (event) => {
-            if (that.opened) {
+            if (that.opened || that.restarting) {
                 that.restarting = false;
                 console.log("server connection closed:", event);
                 that.#close();
