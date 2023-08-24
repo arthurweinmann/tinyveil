@@ -270,11 +270,11 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             } else if (key.charAt(0) === ".") {
                 key = removeFirstCharacter(key);
                 if (obj[key] === undefined) {
-                    console.log(`Missing property: ${key}`);
+                    console.log(`Missing property: ${key} in object ${JSON.stringify(obj)} having to satisfy schema ${JSON.stringify(schema)}`);
                     return false;
                 }
             } else {
-                console.log(`Missing property: ${key}`);
+                console.log(`Missing property: ${key} in object ${JSON.stringify(obj)} having to satisfy schema ${JSON.stringify(schema)}`);
                 return false;
             }
         }
@@ -515,6 +515,7 @@ class HTMLElementType {
     }
 }
 
+// TODO: set an optinal timeout waiting for backend response and enhance idempotency hash usage
 class WebsocketAPI {
     /**
      * 
@@ -678,29 +679,19 @@ class WebsocketAPI {
         definition.cb(null, resp.message);
     }
 
-    // Not sure we need this one
-    // /**
-    //  * 
-    //  * @param {string} name e.g. #Decimal or $subschema
-    //  * @param {any} reference 
-    //  * @return {WebsocketAPI}
-    //  */
-    // SetReference(name, reference) {
-    //     AssertStringStartsWithOr(name, "#", "$");
-    //     this.references[name] = reference;
-    //     return this;
-    // }
-
     /**
      * 
      * @param {string} name 
      * @param {Object} requestType 
-     * @param {Object} responseType 
+     * @param {Object} responseType
      * @return {WebsocketAPI}
      */
     CreateRoute(name, requestType, responseType) {
         AssertTypeOf('string', name);
         AssertTypeOf('object', requestType, responseType);
+        if (this.routes[name] !== undefined) {
+            throw new Error("We already registered route " + name);
+        }
         this.routes[name] = {
             "requestType": requestType,
             "responseType": responseType,
@@ -713,7 +704,7 @@ class WebsocketAPI {
             throw new Error("Route " + routename + " does not exist");
         }
         if (!CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.references)) {
-            cb(new Err("invalidMessageStructure", "The provided message: " + JSON.stringify(message) + " does not satisfy the set request type: " + JSON.stringify(this.routes[routename].requestType)) + " for route " + routename, null);
+            cb(new Err("invalidMessageStructure", "The provided message: " + JSON.stringify(message) + " does not satisfy the set request type: " + JSON.stringify(this.routes[routename].requestType) + " for route " + routename), null);
             return false;
         }
 
