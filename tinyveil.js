@@ -592,7 +592,7 @@ class WebsocketAPI {
         });
 
         this.socket.addEventListener('error', (event) => {
-            if (that.restarting) {
+            if (that.opened) {
                 that.restarting = false;
 
                 console.log("server connection error:", event);
@@ -603,7 +603,7 @@ class WebsocketAPI {
         });
 
         this.socket.addEventListener('close', (event) => {
-            if (that.restarting) {
+            if (that.opened) {
                 that.restarting = false;
 
                 console.log("server connection closed:", event);
