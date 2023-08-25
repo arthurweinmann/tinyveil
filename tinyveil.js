@@ -627,7 +627,7 @@ class WebsocketAPI {
             }
             this.requestCallbacks = {};
         }
-        let delay = (this.retryDelay / 10) * 9 + Math.random() * (this.retryDelay / 10);
+        let delay = (this.retryDelay / 10) * 7 + Math.random() * (this.retryDelay / 10) * 3;
         console.log(`trying reconnection in ${(delay/1000).toFixed(2)} seconds..`);
         setTimeout(() => { this.#start(); }, delay);
     }
