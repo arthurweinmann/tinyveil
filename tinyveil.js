@@ -303,6 +303,10 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                         return true;
                     }
                 }
+            } else if (isQuoted(requiredType)) { // in an enum with a limited number of allowed predefined strings
+                if (typeof target === 'string' && target === requiredType.slice(1, requiredType.length - 1)) {
+                    return true
+                }
             } else if (typeof target === requiredtype && (requiredType !== 'number' || !isNaN(target))) {
                 return true;
             }
@@ -840,20 +844,6 @@ function generateTable() {
     return table;
 }
 
-// function StringToUtf8(string) {
-//     return ReplaceHexCodesWithCharacters(encodeURIComponent(string));
-// }
-
-// function StringToBytes(string) {
-//     const bytes = [];
-
-//     for (let index = 0; index < string.length; ++index) {
-//         bytes.push(string.charCodeAt(index));
-//     }
-
-//     return bytes;
-// }
-
 function StringToBytes(str) {
     return new TextEncoder().encode(str);
 }
@@ -898,4 +888,11 @@ function CRC64(str) {
     crc = ~crc & BigInt('0xffffffffffffffff');
 
     return crc;
+}
+
+// We do not account for strings that contain unescaped quotation characters in the middle
+function isQuoted(str) {
+    const firstChar = str[0];
+    const lastChar = str[str.length - 1];
+    return (firstChar === lastChar) && (firstChar === '"' || firstChar === "'" || firstChar === "`");
 }
