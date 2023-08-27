@@ -764,6 +764,31 @@ function CreateManyElementsFromHTML(htmlString) {
     return ret;
 }
 
+/**
+ * @param {any|null} bindthis
+ * @param {...Function} callbacks
+ */
+function ChainCallbacks(bindthis, callbacks) {
+    if (callbacks.length === 0) {
+        throw new Error("We need at least one callback to proceed");
+    }
+
+    let _counter = 0;
+
+    let _next = function () {
+        _counter++;
+        if (_counter < callbacks.length) {
+            callbacks[_counter].apply(bindthis, ...arguments);
+        } else {
+            delete bindthis._edgemaja___next;
+        }
+    };
+
+    bindthis._edgemaja___next = _next;
+
+    callbacks[0].apply(bindthis);
+}
+
 // ------------------------------------------
 //                UTILS
 // ------------------------------------------
