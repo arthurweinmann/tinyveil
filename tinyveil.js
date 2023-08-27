@@ -778,15 +778,11 @@ function ChainCallbacks(bindthis, callbacks) {
     let _next = function () {
         _counter++;
         if (_counter < callbacks.length) {
-            callbacks[_counter].apply(bindthis, ...arguments);
-        } else {
-            delete bindthis._edgemaja___next;
+            callbacks[_counter].apply(bindthis, _next, ...arguments);
         }
     };
 
-    bindthis._edgemaja___next = _next;
-
-    callbacks[0].apply(bindthis);
+    callbacks[0].apply(bindthis, _next);
 }
 
 // ------------------------------------------
