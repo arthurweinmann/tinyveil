@@ -287,16 +287,28 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             }
         }
 
-        let typeofcheck = function (target, requiredtype) {
-            if (typeof requiredtype === 'string' && requiredtype.startsWith('enum(')) {
+        let typeAndInstanceOfCheck = function (target, requiredtype) {
+            if (typeof requiredType === 'string' && requiredType.charAt(0) === "#") {
+                requiredType = referencedSchemas[requiredType];
+                if (requiredType === undefined) {
+                    throw new Error("could not find the class " + requiredType + " referenced in root schema defintion"); // better to panic early for this error than returning false
+                }
+                if (target instanceof requiredType) {
+                    return true;
+                }
+            } else if (typeof requiredtype === 'string' && requiredtype.startsWith('enum(')) {
                 let possibleValues = requiredtype.substring('enum('.length, requiredtype.length - 1).split(',').map(x => x.trim());
-                return possibleValues.includes(target);
-            }
-            if (typeof target === requiredtype) {
+                for (let i = 0; i < possibleValues.length; i++) {
+                    if (typeAndInstanceOfCheck(target, possibleValues[i])) {
+                        return true;
+                    }
+                }
+            } else if (typeof target === requiredtype && (requiredType !== 'number' || !isNaN(target))) {
                 return true;
             }
+            console.log(`Incorrect type for property: ${key}. Expected ${requiredType}, got`, target);
             return false;
-        }
+        };
 
         // If the required type is an object, recurse into it
         if (typeof requiredType === "object" && !Array.isArray(requiredType)) {
@@ -331,20 +343,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                         }
                     } else {
                         // If the types don't match, return false
-                        if (typeof requiredType[0] === 'string' && requiredType[0].charAt(0) === "#") {
-                            let tmptype = referencedSchemas[requiredType[0]];
-                            if (tmptype === undefined) {
-                                throw new Error("could not find the class " + requiredType[0] + " referenced in root schema defintion"); // better to panic early for this error than returning false
-                            }
-                            if (!(item instanceof tmptype)) {
-                                console.log(`Incorrect class for property: ${key}. Expected ${tmptype}, got ${item}`);
-                                return false;
-                            }
-                        } else if (!typeofcheck(item, requiredType[0])) {
-                            console.log(`Incorrect type for property: ${key}. Expected ${requiredType[0]}, got ${typeof item}`);
-                            return false;
-                        } else if (requiredType[0] === 'number' && isNaN(item)) {
-                            console.log(`Incorrect type for property: ${key}. Expected ${requiredType[0]}, got ${typeof item}`);
+                        if (!typeAndInstanceOfCheck(item, requiredType[0])) {
                             return false;
                         }
                     }
@@ -352,20 +351,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             }
         } else {
             // If the types don't match, return false
-            if (typeof requiredType === 'string' && requiredType.charAt(0) === "#") {
-                requiredType = referencedSchemas[requiredType];
-                if (requiredType === undefined) {
-                    throw new Error("could not find the class " + requiredType + " referenced in root schema defintion"); // better to panic early for this error than returning false
-                }
-                if (!(obj[key] instanceof requiredType)) {
-                    console.log(`Incorrect class for property: ${key}. Expected ${requiredType}, got ${obj[key]}`);
-                    return false;
-                }
-            } else if (!typeofcheck(obj[key], requiredType)) {
-                console.log(`Incorrect type for property: ${key}. Expected ${requiredType}, got ${typeof obj[key]}`);
-                return false;
-            } else if (requiredType === 'number' && isNaN(obj[key])) {
-                console.log(`Incorrect type for property: ${key}. Expected ${requiredType}, got ${typeof obj[key]}`);
+            if (!typeAndInstanceOfCheck(obj[key], requiredType)) {
                 return false;
             }
         }
@@ -575,7 +561,7 @@ class WebsocketAPI {
 
         try {
             this.socket = new WebSocket(this.address);
-        } catch(e) {
+        } catch (e) {
             that.restarting = false;
             console.log("We could not establish websocket to backend:", e);
             that.#close();
@@ -628,7 +614,7 @@ class WebsocketAPI {
             this.requestCallbacks = {};
         }
         let delay = (this.retryDelay / 10) * 7 + Math.random() * (this.retryDelay / 10) * 3;
-        console.log(`trying reconnection in ${(delay/1000).toFixed(2)} seconds..`);
+        console.log(`trying reconnection in ${(delay / 1000).toFixed(2)} seconds..`);
         setTimeout(() => { this.#start(); }, delay);
     }
 

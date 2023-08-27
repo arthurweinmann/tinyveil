@@ -8,7 +8,7 @@ This library provides a comprehensive suite of utility functions for type checki
 
 With a framework or a compiler, you can easily find yourself stuck with it even after outgrowning it or disliking its ecosystem (or the framework has stagnated for too long), and you want to switch. This can be really hard, because frameworks shape your code, and each framework is different, so there is no easy migration path. The contact surface with libraries, on the other hand, is often very small, making a switch from one library to another a much smaller task, with a low blast radius.
 
-This is why Tinyveil aims to occupy the role of a library and not a framework.
+This is why Tinyveil aims to occupy the role of a library and not a framework. The best reason to write a library in plain JavaScript is that it lasts forever. This is arguably JavaScript’s single most underrated feature.
 
 It offers an immediate and proactive way of validating data types during the development process, which can be particularly useful in a language like JavaScript where types can be loosely defined. 
 It is very simple and aims at staying simple to use.Its helper functions throw errors immediately when a type mismatch or invalid parameter is detected, facilitating early error discovery and making debugging easier. 
