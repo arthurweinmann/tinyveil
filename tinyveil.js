@@ -186,7 +186,7 @@ function AssertEqual(src, target) {
 
 function AssertArray(src) {
     if (!Array.isArray(src)) {
-        throw new Error("invalid parameter, expected an array");
+        throw new Error("invalid parameter, expected an array, got: " + JSON.stringify(src));
     }
 }
 
