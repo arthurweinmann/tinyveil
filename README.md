@@ -2,7 +2,7 @@
     <img src="doc/logo.png"/>
 </p>
 
-# Vanilla Javascript Typesystem
+# Tinyveil: A vanilla javascript helper
 
 This library provides a comprehensive suite of utility functions for type checking in vanilla JavaScript without the need for any additional frameworks or a compiler. 
 
@@ -35,7 +35,12 @@ There is more than 3000 dependencies in a blank react project! You did not even 
 
 - Javascript type assertions with some nice quirks
 - Object check against a type schema (for receiving response from backend apis for example)
+- A Websocket API class
 - An interesting alpha experiment of an HTML node type compiling to and from an HTMLElement recursively
+
+## Status
+
+This library is still in active development. Expect a lot of changes. I am using it in one of my projects and make it better along the way.
 
 ## Integrate with Makefile
 
