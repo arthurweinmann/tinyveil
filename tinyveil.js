@@ -286,30 +286,30 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             }
         }
 
-        let typeAndInstanceOfCheck = function (target, requiredtype) {
-            if (typeof requiredType === 'string' && requiredType.charAt(0) === "#") {
-                requiredType = referencedSchemas[requiredType];
-                if (requiredType === undefined) {
-                    throw new Error("could not find the class " + requiredType + " referenced in root schema defintion"); // better to panic early for this error than returning false
+        let typeAndInstanceOfCheck = function (target, reqT) {
+            if (typeof reqT === 'string' && reqT.charAt(0) === "#") {
+                reqT = referencedSchemas[reqT];
+                if (reqT === undefined) {
+                    throw new Error("could not find the class " + reqT + " referenced in root schema defintion"); // better to panic early for this error than returning false
                 }
-                if (target instanceof requiredType) {
+                if (target instanceof reqT) {
                     return { success: true };
                 }
-            } else if (typeof requiredtype === 'string' && requiredtype.startsWith('enum(')) {
-                let possibleValues = requiredtype.substring('enum('.length, requiredtype.length - 1).split(',').map(x => x.trim());
+            } else if (typeof reqT === 'string' && reqT.startsWith('enum(')) {
+                let possibleValues = reqT.substring('enum('.length, reqT.length - 1).split(',').map(x => x.trim());
                 for (let i = 0; i < possibleValues.length; i++) {
                     if (typeAndInstanceOfCheck(target, possibleValues[i])) {
                         return { success: true };
                     }
                 }
-            } else if (isQuoted(requiredType)) { // in an enum with a limited number of allowed predefined strings
-                if (typeof target === 'string' && target === requiredType.slice(1, requiredType.length - 1)) {
+            } else if (isQuoted(reqT)) { // in an enum with a limited number of allowed predefined strings
+                if (typeof target === 'string' && target === reqT.slice(1, reqT.length - 1)) {
                     return { success: true }
                 }
-            } else if (typeof target === requiredtype && (requiredType !== 'number' || !isNaN(target))) {
+            } else if (typeof target === reqT && (reqT !== 'number' || !isNaN(target))) {
                 return { success: true };
             }
-            return { success: false, message: stringLog(`Incorrect type for property: ${key}. Expected ${requiredType}, got`, target) };
+            return { success: false, message: stringLog(`Incorrect type for property: ${key}. Expected ${reqT}, got`, target) };
         };
 
         // If the required type is an object, recurse into it
