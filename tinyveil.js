@@ -11,7 +11,7 @@ const TINYVEIL_CUSTOM_TYPES_CHECKS = {
 function AssertInstOf(target, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (!(src[i] instanceof target)) {
-            throw new Error("invalid parameter " + i + ": " + src[i]);
+            throw new Error("invalid parameter " + i + ": " + JSON.stringify(src[i]));
         }
     }
 }
@@ -19,7 +19,7 @@ function AssertInstOf(target, ...src) {
 function AssertNullOrInstOf(target, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (src[i] !== null && !(src[i] instanceof target)) {
-            throw new Error("invalid parameter " + i + ": " + src[i]);
+            throw new Error("invalid parameter " + i + ": " + JSON.stringify(src[i]));
         }
     }
 }
@@ -768,6 +768,9 @@ function CreateManyElementsFromHTML(htmlString) {
 }
 
 /**
+ * ChainCallbacks should be overused. It is especially useful when you have a serie of callbacks dependending one each other,
+ * one after each other, and you have some kind of branching, for example a if condition that calls another function or not 
+ * before calling the next step in the callbacks chain.
  * @param {any|null} bindthis
  * @param {...Function} callbacks
  */
