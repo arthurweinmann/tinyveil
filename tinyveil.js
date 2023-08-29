@@ -772,6 +772,7 @@ function CreateManyElementsFromHTML(htmlString) {
  * @param {...Function} callbacks
  */
 function ChainCallbacks(bindthis, callbacks) {
+    AssertArrayOfType(callbacks, 'function');
     if (callbacks.length === 0) {
         throw new Error("We need at least one callback to proceed");
     }
