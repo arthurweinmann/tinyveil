@@ -785,11 +785,11 @@ function ChainCallbacks(bindthis, ...callbacks) {
     let _next = function () {
         _counter++;
         if (_counter < callbacks.length) {
-            callbacks[_counter].apply(bindthis, _next, ...arguments);
+            callbacks[_counter].apply(bindthis, [_next, ...arguments]);
         }
     };
 
-    callbacks[0].apply(bindthis, _next);
+    callbacks[0].apply(bindthis, [_next]);
 }
 
 // ------------------------------------------
