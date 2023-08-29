@@ -230,8 +230,9 @@ function AssertArrayOfType(src, t) {
  * @param {Object<string, Object<string, any>>|undefined} referencedSchemas 
  */
 function AssertObjectSchema(obj, schema, referencedSchemas) {
-    if (!CheckObjectAgainstSchema(obj, schema, referencedSchemas)) {
-        throw new Error("object does not respect schema");
+    let resp = CheckObjectAgainstSchema(obj, schema, referencedSchemas);
+    if (!resp.success) {
+        throw new Error("object does not respect schema: " + resp.message);
     }
 }
 
@@ -239,18 +240,18 @@ function AssertObjectSchema(obj, schema, referencedSchemas) {
 /**
  * Function to check Object against a type schema with the possibility to reference schemas as the type of one or more fields.
  * 
+ * @template {{success: boolean, message: string}} resp
  * @param {Object<string, any>} obj 
  * @param {Object<string, any>} schema
  * @param {Object<string, Object<string, any>>|undefined} referencedSchemas 
- * @returns 
+ * @return {resp}
  */
 function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
     AssertTypeOf("object", schema);
     AssertTypeOfOR(referencedSchemas, "object", "undefined");
 
     if (typeof obj !== 'object' || obj === null || obj === undefined) {
-        console.log("Invalid object to check:", obj);
-        return false;
+        return { success: false, message: stringLog("Invalid object to check:", obj) };
     }
 
     // Iterate over each property in the schema
@@ -270,12 +271,10 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             } else if (key.charAt(0) === ".") {
                 key = removeFirstCharacter(key);
                 if (obj[key] === undefined) {
-                    console.log(`Missing property: ${key} in object`, obj, `having to satisfy schema`, schema);
-                    return false;
+                    return { success: false, message: stringLog(`Missing property: ${key} in object`, obj, `having to satisfy schema`, schema) };
                 }
             } else {
-                console.log(`Missing property: ${key} in object`, obj, `having to satisfy schema`, schema);
-                return false;
+                return { success: false, message: stringLog(`Missing property: ${key} in object`, obj, `having to satisfy schema`, schema) };
             }
         }
 
@@ -294,42 +293,40 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                     throw new Error("could not find the class " + requiredType + " referenced in root schema defintion"); // better to panic early for this error than returning false
                 }
                 if (target instanceof requiredType) {
-                    return true;
+                    return { success: true };
                 }
             } else if (typeof requiredtype === 'string' && requiredtype.startsWith('enum(')) {
                 let possibleValues = requiredtype.substring('enum('.length, requiredtype.length - 1).split(',').map(x => x.trim());
                 for (let i = 0; i < possibleValues.length; i++) {
                     if (typeAndInstanceOfCheck(target, possibleValues[i])) {
-                        return true;
+                        return { success: true };
                     }
                 }
             } else if (isQuoted(requiredType)) { // in an enum with a limited number of allowed predefined strings
                 if (typeof target === 'string' && target === requiredType.slice(1, requiredType.length - 1)) {
-                    return true
+                    return { success: true }
                 }
             } else if (typeof target === requiredtype && (requiredType !== 'number' || !isNaN(target))) {
-                return true;
+                return { success: true };
             }
-            console.log(`Incorrect type for property: ${key}. Expected ${requiredType}, got`, target);
-            return false;
+            return { success: false, message: stringLog(`Incorrect type for property: ${key}. Expected ${requiredType}, got`, target) };
         };
 
         // If the required type is an object, recurse into it
         if (typeof requiredType === "object" && !Array.isArray(requiredType)) {
             // If the corresponding Object property is not an object, return false
             if (typeof obj[key] !== "object" || Array.isArray(obj[key])) {
-                console.log(`Expected object for property: ${key}`);
-                return false;
+                return { success: false, message: stringLog(`Expected object for property: ${key}`) };
             }
             // Recurse into the object
-            if (!CheckObjectAgainstSchema(obj[key], requiredType, referencedSchemas)) {
-                return false;
+            let resp = CheckObjectAgainstSchema(obj[key], requiredType, referencedSchemas);
+            if (!resp.success) {
+                return resp;
             }
         } else if (Array.isArray(requiredType)) {
             // If requiredType is an array, check if the object value is an array of the correct type
             if (!Array.isArray(obj[key])) {
-                console.log(`Expected array for property: ${key}`);
-                return false;
+                return { success: false, message: stringLog(`Expected array for property: ${key}`) };
             } else {
                 if (typeof requiredType[0] === 'string' && requiredType[0].charAt(0) === "$") {
                     requiredType[0] = referencedSchemas[requiredType[0]];
@@ -342,27 +339,30 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                 for (let item of obj[key]) {
                     if (typeof requiredType[0] === 'object') {
                         // Recurse into the array item and expected item type
-                        if (!CheckObjectAgainstSchema(item, requiredType[0], referencedSchemas)) {
-                            return false;
+                        let resp = CheckObjectAgainstSchema(item, requiredType[0], referencedSchemas);
+                        if (!resp.success) {
+                            return resp;
                         }
                     } else {
                         // If the types don't match, return false
-                        if (!typeAndInstanceOfCheck(item, requiredType[0])) {
-                            return false;
+                        let checkresp = typeAndInstanceOfCheck(item, requiredType[0]);
+                        if (!checkresp.success) {
+                            return checkresp;
                         }
                     }
                 }
             }
         } else {
             // If the types don't match, return false
-            if (!typeAndInstanceOfCheck(obj[key], requiredType)) {
-                return false;
+            let checkresp = typeAndInstanceOfCheck(obj[key], requiredType);
+            if (!checkresp.success) {
+                return checkresp;
             }
         }
     }
 
     // If we made it through all properties without returning false, the Object matches the schema
-    return true;
+    return { success: true };
 }
 
 const NATIVE_SCHEMAS = {
@@ -387,8 +387,9 @@ class HTMLElementType {
      */
     constructor(htmlSchema) {
         AssertTypeOf("object", htmlSchema);
-        if (!CheckObjectAgainstSchema(htmlSchema, NATIVE_SCHEMAS["$HTML_ELEMENT"], NATIVE_SCHEMAS)) {
-            throw new Error("invalid parameter");
+        let resp = CheckObjectAgainstSchema(htmlSchema, NATIVE_SCHEMAS["$HTML_ELEMENT"], NATIVE_SCHEMAS);
+        if (!resp.success) {
+            throw new Error("invalid parameter: " + resp.message);
         }
         this.Schema = htmlSchema;
     }
@@ -665,8 +666,9 @@ class WebsocketAPI {
             return;
         }
 
-        if (!CheckObjectAgainstSchema(resp.message, this.routes[definition.routename].responseType, this.references)) {
-            definition.cb(new Err("invalidMessageStructure", "The response received from the backend: " + JSON.stringify(resp.message) + " does not satisfy the set response type: " + JSON.stringify(this.routes[definition.routename].responseType) + " for route " + definition.routename), null);
+        let checkresp = CheckObjectAgainstSchema(resp.message, this.routes[definition.routename].responseType, this.references);
+        if (!checkresp.success) {
+            definition.cb(new Err("invalidMessageStructure", "The response received from the backend: " + JSON.stringify(resp.message) + " does not satisfy the set response type: " + JSON.stringify(this.routes[definition.routename].responseType) + " for route " + definition.routename + " for the following reason: " + checkresp.message), null);
             return false;
         }
 
@@ -697,8 +699,9 @@ class WebsocketAPI {
         if (this.routes[routename] === undefined) {
             throw new Error("Route " + routename + " does not exist");
         }
-        if (!CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.references)) {
-            cb(new Err("invalidMessageStructure", "The provided message: " + JSON.stringify(message) + " does not satisfy the set request type: " + JSON.stringify(this.routes[routename].requestType) + " for route " + routename), null);
+        let checkresp = CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.references);
+        if (!checkresp.success) {
+            cb(new Err("invalidMessageStructure", "The provided message: " + JSON.stringify(message) + " does not satisfy the set request type: " + JSON.stringify(this.routes[routename].requestType) + " for route " + routename + " for the following reason: " + checkresp.message), null);
             return false;
         }
 
@@ -916,4 +919,40 @@ function isQuoted(str) {
     const firstChar = str[0];
     const lastChar = str[str.length - 1];
     return (firstChar === lastChar) && (firstChar === '"' || firstChar === "'" || firstChar === "`");
+}
+
+/**
+ * This function iterates over all arguments. If the argument is an object (which includes arrays), 
+ * it stringifies it using JSON.stringify with a replacer that prevents errors from circular references. 
+ * If the argument is not an object, it is converted to a string using String. 
+ * After each argument, a space is added to separate the arguments in the resulting string.
+ * @param {...any}
+ * @return {string}
+ */
+function stringLog() {
+    let result = '';
+    const seen = new WeakSet();
+
+    for (let i = 0; i < arguments.length; i++) {
+        if (typeof arguments[i] === 'object' && arguments[i] !== null) {
+            result += JSON.stringify(arguments[i], function (key, value) {
+                if (typeof value === 'object' && value !== null) {
+                    if (seen.has(value)) {
+                        return;
+                    }
+                    seen.add(value);
+                }
+                return value;
+            });
+        } else {
+            result += String(arguments[i]);
+        }
+
+        // Add a space between arguments like console.log does
+        if (i < arguments.length - 1) {
+            result += ' ';
+        }
+    }
+
+    return result;
 }
