@@ -960,3 +960,11 @@ function stringLog() {
 
     return result;
 }
+
+/**
+ * Panic is a golang-ish shorthand for throw new Error({message})
+ * @param {string} message 
+ */
+function panic(message) {
+    throw new Error(message);
+}
