@@ -834,7 +834,7 @@ function ASYNC(code, finalcb) {
  * @param {string} methodname 
  */
 function Asyncmethod(objinstance, methodname) {
-    if (!objinstance.hasOwnProperty(methodname)) {
+    if (objinstance[methodname] === undefined) {
         throw new Error("Object does not contain the property:" + methodname);
     }
     return objinstance[methodname].bind(objinstance);
