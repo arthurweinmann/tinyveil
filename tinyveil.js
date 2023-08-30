@@ -806,7 +806,7 @@ function ASYNC(code, finalcb) {
 
     let iterator = function () {
         let value, done;
-        ({ value, done } = generated.next(...arguments));
+        ({ value, done } = generated.next([...arguments]));
         AssertInstOf(Array, value);
 
         if (done) {
