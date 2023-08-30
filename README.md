@@ -36,7 +36,7 @@ There is more than 3000 dependencies in a blank react project! You did not even 
 - Javascript type assertions with some nice quirks
 - Object check against a type schema
 - A Websocket API class
-- A ChainCallbacks helper to avoid callback hell and use branching in the callback chain
+- An ASYNC helper to write async code without async/await and without callback hell.
 - An interesting alpha experiment of an HTML node type compiling to and from an HTMLElement recursively. It can then be used to generate HTMLElement of the same type but with a different content.
 
 # Status
@@ -44,6 +44,8 @@ There is more than 3000 dependencies in a blank react project! You did not even 
 This library is still in active development. Expect a lot of changes. I am using it in one of my projects and make it better along the way.
 
 # Import in my Makefile
+
+By importing tinyveil.js and committing it into your reposiroty, you create at the same time a correspondance between each version of tinyveil and of your project. This way, you can always revert back easily.
 
 ```Makefile
 .PHONY: fetch-tinyveil
@@ -58,7 +60,7 @@ $(BUILDDIR):
 
 # Usage
 
-Coming soon! In the meantime, the code in the [Tinyveil library file](tinyveil.js) is quite readable.
+A complete usage guide is coming soon! In the meantime, the code in the [Tinyveil library file](tinyveil.js) is quite readable.
 
 ## License
 

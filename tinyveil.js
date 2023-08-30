@@ -829,7 +829,17 @@ function ASYNC(code, finalcb) {
 }
 
 /**
- * 
+ * You may bind your class method directly into your class constructor if you would like to avoid using this function.
+ * For example
+ *              class A {
+ *                  constructor() {
+ *                      this.method = this.method.bind(this);
+ *                  }
+ *                  
+ *                  method() {
+ *                      console.log(this)
+ *                  }
+ *              }
  * @param {Object} objinstance 
  * @param {string} methodname 
  */
