@@ -802,16 +802,30 @@ function ChainCallbacks(bindthis, ...callbacks) {
 function ASYNC(code, finalcb) {
     AssertTypeOf('function', code, finalcb);
 
-    let done = false;
-    let results = [];
-    while (!done) {
-        // the first call to next does not pass argument since the code generator is not waiting on yield
-        ({results, done} = code.next(results));
-        AssertInstOf(Array, results);
-    }
+    let generated = code();
 
-    // use the last results as the arguments to the final callbacks - it s the final callback, tintintin tin
-    finalcb(...results);
+    let iterator = function () {
+        let value, done;
+        ({ value, done } = generated.next(...arguments));
+        AssertInstOf(Array, value);
+
+        if (done) {
+            // use the last results as the arguments to the final callbacks - it s the final callback, tintintin tin
+            finalcb(...value);
+            return;
+        }
+
+        AssertTypeOf('function', value[0]);
+        if (value.length > 1) {
+            let args = value.slice(1);
+            args.push(iterator);
+            value[0](...args);
+        } else {
+            value[0](iterator);
+        }
+    };
+
+    iterator();
 }
 
 // ------------------------------------------
