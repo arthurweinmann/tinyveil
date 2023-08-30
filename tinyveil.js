@@ -769,31 +769,6 @@ function CreateManyElementsFromHTML(htmlString) {
 }
 
 /**
- * This function should not be overused. It is especially useful when you have a serie of callbacks dependending on each other,
- * one after the other, and you have some kind of branching, for example a if condition that calls another function or not 
- * before calling the next step in the callbacks chain.
- * @param {any|null} bindthis
- * @param {...Function} callbacks
- */
-function ChainCallbacks(bindthis, ...callbacks) {
-    AssertArrayOfType(callbacks, 'function');
-    if (callbacks.length === 0) {
-        throw new Error("We need at least one callback to proceed");
-    }
-
-    let _counter = 0;
-
-    let _next = function () {
-        _counter++;
-        if (_counter < callbacks.length) {
-            callbacks[_counter].apply(bindthis, [_next, ...arguments]);
-        }
-    };
-
-    callbacks[0].apply(bindthis, [_next]);
-}
-
-/**
  * One final callback is great, we want to avoid callback hell consisting of many nested callbacks.
  * We want readable linear and flat code. We do not want obscurity and contamination as with async/await.
  * @param {Function} code 
@@ -807,7 +782,6 @@ function ASYNC(code, finalcb) {
     let iterator = function () {
         let value, done;
         ({ value, done } = generated.next([...arguments]));
-        AssertInstOf(Array, value);
 
         if (done) {
             // use the last results as the arguments to the final callbacks - it s the final callback, tintintin tin
@@ -815,14 +789,29 @@ function ASYNC(code, finalcb) {
             return;
         }
 
-        AssertTypeOf('function', value[0]);
-        if (value.length > 1) {
-            let args = value.slice(1);
-            args.push(iterator);
-            value[0](...args);
-        } else {
-            value[0](iterator);
+        if (value instanceof Array) {
+            AssertTypeOf('function', value[0]);
+            if (value.length > 1) {
+                let args = value.slice(1);
+                args.push(iterator);
+                value[0](...args);
+            } else {
+                value[0](iterator);
+            }
+            return;
         }
+
+        if (isPromise(value)) {
+            value.then(function (v) {
+                iterator(null, v);
+            }).catch(function (e) {
+                iterator(new Err("promiseError", e.toString()), null);
+            });
+            return;
+        }
+
+        console.log(value);
+        throw new Error("invalid parameter provided to yield in generator from ASYNC helper. We expect either a promise or an array where the first element is a function and the following elements are the arguments to pass it.");
     };
 
     iterator();
@@ -1025,4 +1014,16 @@ function stringLog() {
  */
 function panic(message) {
     throw new Error(message);
+}
+
+function isPromise(p) {
+    if (
+        p !== null &&
+        typeof p === 'object' &&
+        typeof p.then === 'function' &&
+        typeof p.catch === 'function'
+    ) {
+        return true;
+    }
+    return false;
 }

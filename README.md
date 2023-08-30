@@ -45,7 +45,7 @@ This library is still in active development. Expect a lot of changes. I am using
 
 # Import in my Makefile
 
-By importing tinyveil.js and committing it into your reposiroty, you create at the same time a correspondance between each version of tinyveil and of your project. This way, you can always revert back easily.
+By importing tinyveil.js and committing it into your repository, you create at the same time an association between each version of tinyveil and of your project. This way, you can always revert back reliably.
 
 ```Makefile
 .PHONY: fetch-tinyveil
