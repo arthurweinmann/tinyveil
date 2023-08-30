@@ -36,8 +36,8 @@ There is more than 3000 dependencies in a blank react project! You did not even 
 - Javascript type assertions with some nice quirks
 - Object check against a type schema
 - A Websocket API class
-- A ChainCallbakcs helper to avoid callback hell and use branching in the callback chain
-- An interesting alpha experiment of an HTML node type compiling to and from an HTMLElement recursively
+- A ChainCallbacks helper to avoid callback hell and use branching in the callback chain
+- An interesting alpha experiment of an HTML node type compiling to and from an HTMLElement recursively. It can then be used to generate HTMLElement of the same type but with a different content.
 
 # Status
 
