@@ -401,6 +401,7 @@ class HTMLElementType {
      */
     Check(node) {
         // TODO
+        panic("not yet implemented");
         return false;
     }
 
@@ -506,7 +507,7 @@ class HTMLElementType {
     }
 }
 
-// TODO: set an optinal timeout waiting for backend response and enhance idempotency hash usage
+// TODO: set an optional timeout waiting for backend response and enhance idempotency hash usage
 class WebsocketAPI {
     /**
      * 
@@ -768,9 +769,10 @@ function CreateManyElementsFromHTML(htmlString) {
 }
 
 /**
- * ChainCallbacks should not be overused. It is especially useful when you have a serie of callbacks dependending one each other,
- * one after each other, and you have some kind of branching, for example a if condition that calls another function or not 
+ * It is especially useful when you have a serie of callbacks dependending on each other,
+ * one after the other, and you have some kind of branching, for example a if condition that calls another function or not 
  * before calling the next step in the callbacks chain.
+ * Flat is better than nested. It is also less obscur and contaminating than async/await.
  * @param {any|null} bindthis
  * @param {...Function} callbacks
  */
