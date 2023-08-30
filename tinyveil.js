@@ -768,7 +768,7 @@ function CreateManyElementsFromHTML(htmlString) {
 }
 
 /**
- * ChainCallbacks should be overused. It is especially useful when you have a serie of callbacks dependending one each other,
+ * ChainCallbacks should not be overused. It is especially useful when you have a serie of callbacks dependending one each other,
  * one after each other, and you have some kind of branching, for example a if condition that calls another function or not 
  * before calling the next step in the callbacks chain.
  * @param {any|null} bindthis
