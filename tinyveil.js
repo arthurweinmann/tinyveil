@@ -769,10 +769,9 @@ function CreateManyElementsFromHTML(htmlString) {
 }
 
 /**
- * It is especially useful when you have a serie of callbacks dependending on each other,
+ * This function should not be overused. It is especially useful when you have a serie of callbacks dependending on each other,
  * one after the other, and you have some kind of branching, for example a if condition that calls another function or not 
  * before calling the next step in the callbacks chain.
- * Flat is better than nested. It is also less obscur and contaminating than async/await.
  * @param {any|null} bindthis
  * @param {...Function} callbacks
  */
@@ -792,6 +791,27 @@ function ChainCallbacks(bindthis, ...callbacks) {
     };
 
     callbacks[0].apply(bindthis, [_next]);
+}
+
+/**
+ * One final callback is great, we want to avoid callback hell consisting of many nested callbacks.
+ * We want readable linear and flat code. We do not want obscurity and contamination as with async/await.
+ * @param {Function} code 
+ * @param {Function} finalcb 
+ */
+function ASYNC(code, finalcb) {
+    AssertTypeOf('function', code, finalcb);
+
+    let done = false;
+    let results = [];
+    while (!done) {
+        // the first call to next does not pass argument since the code generator is not waiting on yield
+        ({results, done} = code.next(results));
+        AssertInstOf(Array, results);
+    }
+
+    // use the last results as the arguments to the final callbacks - it s the final callback, tintintin tin
+    finalcb(...results);
 }
 
 // ------------------------------------------
