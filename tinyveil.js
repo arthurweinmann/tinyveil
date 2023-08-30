@@ -828,6 +828,18 @@ function ASYNC(code, finalcb) {
     iterator();
 }
 
+/**
+ * 
+ * @param {Object} objinstance 
+ * @param {string} methodname 
+ */
+function Asyncmethod(objinstance, methodname) {
+    if (!objinstance.hasOwnProperty(methodname)) {
+        throw new Error("Object does not contain the property:" + methodname);
+    }
+    return objinstance[methodname].bind(objinstance);
+}
+
 // ------------------------------------------
 //                UTILS
 // ------------------------------------------
