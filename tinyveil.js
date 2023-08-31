@@ -838,7 +838,7 @@ function ASYNC(code, finalcb) {
     }
 
     function handleError(e, length = 1) {
-        const errMessage = (e instanceof Error) ? e.message : e.toString();
+        const errMessage = (e instanceof Error) ? e.message + "\nStack: " + e.stack : e.toString();
         const nullargs = Array(length).fill(null);
         iterator(new Error(`${errMessage}`), ...nullargs);
     }
