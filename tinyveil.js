@@ -756,46 +756,13 @@ class WebsocketAPI {
      */
     SendPromise(routename, message) {
         return new Promise(function (resolve, reject) {
-            if (this.routes[routename] === undefined) {
-                throw new Error("Route " + routename + " does not exist");
-            }
-            let checkresp = CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.references);
-            if (!checkresp.success) {
-                reject(new Err("invalidMessageStructure", "The provided message: " + JSON.stringify(message) + " does not satisfy the set request type: " + JSON.stringify(this.routes[routename].requestType) + " for route " + routename + " for the following reason: " + checkresp.message))
-                return;
-            }
-
-            var definition = {
-                "routename": routename,
-                "message": message,
-                "cb": cb
-            };
-
-            if (!this.opened) {
-                this.requestbuffer.push(definition);
-                return;
-            }
-
-            let payload = {
-                "routename": routename,
-                "order": (this.requestidincrement++),
-                // "idempotencyhash": CRC64(JSON.stringify({ routename: routename, message: message })),
-                "message": message
-            };
-            if (this.sessionID !== null) {
-                payload.sessionid = this.sessionID;
-            }
-
-            this.requestCallbacks[payload.order] = definition;
-
-            // fail fast
-            var str = JSON.stringify(payload);
-
-            try {
-                this.socket.send(str);
-            } catch (e) {
-                this.#close();
-            }
+            this.Send(routename, message, function(err, data){
+                if (err !== null) {
+                    reject(err);
+                    return;
+                }
+                resolve(data);
+            });
         }.bind(this));
     }
 }
