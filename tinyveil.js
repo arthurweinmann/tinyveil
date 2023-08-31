@@ -807,6 +807,7 @@ function ASYNC(code, finalcb) {
     let generator = code();
 
     function handleResult(result) {
+
         if (result.done) {
             return finalcb(...result.value);
         }
@@ -848,7 +849,7 @@ function ASYNC(code, finalcb) {
             throw err;
         }
         try {
-            handleResult(generator.next(args));
+            handleResult(generator.next([null, ...args]));
         } catch (e) {
             // Handle synchronous errors
             handleError(e);
