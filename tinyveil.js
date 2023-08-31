@@ -756,7 +756,7 @@ class WebsocketAPI {
      */
     SendPromise(routename, message) {
         return new Promise(function (resolve, reject) {
-            this.Send(routename, message, function(err, data){
+            this.Send(routename, message, function (err, data) {
                 if (err !== null) {
                     reject(err);
                     return;
@@ -815,14 +815,42 @@ function ASYNC(code, finalcb) {
         }
 
         if (value instanceof Array) {
-            AssertTypeOf('function', value[0]);
-            if (value.length > 1) {
-                let args = value.slice(1);
-                args.push(iterator);
-                value[0](...args);
-            } else {
-                value[0](iterator);
+            let onlypromises = true;
+            for (let i = 0; i < value.length; i++) {
+                if (!isPromise(value[i])) {
+                    onlypromises = false;
+                    break;
+                }
             }
+
+            if (!onlypromises) {
+                AssertTypeOf('function', value[0]);
+                if (value.length > 1) {
+                    let args = value.slice(1);
+                    args.push(iterator);
+                    value[0](...args);
+                } else {
+                    value[0](iterator);
+                }
+                return;
+            }
+
+            Promise.all(value).then(function (vs) {
+                if (vs === undefined) {
+                    vs = [];
+                }
+                if (vs.length !== value.length) {
+                    throw new Error("internal inconsistency");
+                }
+                iterator(null, ...vs);
+            }).catch(function (e) {
+                let nullargs = Array(value.length).fill(null); // We do not wish to break array destructuring
+                if (e instanceof Error) {
+                    iterator(new Err("promisePanic", e.toString()), ...nullargs);
+                } else {
+                    iterator(e, ...nullargs);
+                }
+            });
             return;
         }
 
@@ -843,7 +871,7 @@ function ASYNC(code, finalcb) {
         }
 
         console.log(value);
-        throw new Error("invalid parameter provided to yield call in generator from ASYNC helper. We expect either a promise or an array where the first element is a function and the following elements are the arguments to pass to its call.");
+        throw new Error("invalid parameter provided to yield call in generator from ASYNC helper. We expect either a promise or an array of either only promises or where the first element is a function and the following elements are the arguments to pass to its call.");
     };
 
     iterator();
