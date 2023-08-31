@@ -803,21 +803,31 @@ function ASYNC(code, finalcb) {
 
         if (isPromise(value)) {
             value.then(function (v) {
+                if (v === undefined) {
+                    v = null;
+                }
                 iterator(null, v);
             }).catch(function (e) {
-                iterator(new Err("promiseError", e.toString()), null);
+                if (e instanceof Error) {
+                    iterator(new Err("promisePanic", e.toString()), null);
+                } else {
+                    iterator(e, null);
+                }
             });
             return;
         }
 
         console.log(value);
-        throw new Error("invalid parameter provided to yield in generator from ASYNC helper. We expect either a promise or an array where the first element is a function and the following elements are the arguments to pass it.");
+        throw new Error("invalid parameter provided to yield call in generator from ASYNC helper. We expect either a promise or an array where the first element is a function and the following elements are the arguments to pass to its call.");
     };
 
     iterator();
 }
 
 /**
+ * Asyncmethod returns the method from your class instance binded to this class instance. In Javascript, when you put the method
+ * from a class instance into a variable, and call this from inside this method, it does not refer anymore to the class instance.
+ * 
  * You may bind your class method directly into your class constructor if you would like to avoid using this function.
  * For example
  *              class A {
