@@ -824,6 +824,18 @@ function ASYNC(code, finalcb) {
     iterator();
 }
 
+function ASYNCPromise(code) {
+    return new Promise(function (resolve, reject) {
+        ASYNC(code, function (err, data) {
+            if (err !== null) {
+                reject(err);
+                return
+            }
+            resolve(data);
+        });
+    });
+}
+
 /**
  * Asyncmethod returns the method from your class instance binded to this class instance. In Javascript, when you put the method
  * from a class instance into a variable, and call this from inside this method, it does not refer anymore to the class instance.
