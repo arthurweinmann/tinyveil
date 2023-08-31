@@ -800,79 +800,60 @@ function CreateManyElementsFromHTML(htmlString) {
  * @param {Function} finalcb 
  */
 function ASYNC(code, finalcb) {
-    AssertTypeOf('function', code, finalcb);
+    if (typeof code !== 'function' || typeof finalcb !== 'function') {
+        throw new Error("The arguments must be functions.");
+    }
 
-    let generated = code();
+    let generator = code();
 
-    let iterator = function () {
-        let value, done;
-        ({ value, done } = generated.next([...arguments]));
-
-        if (done) {
-            // use the last results as the arguments to the final callbacks - it s the final callback, tintintin tin
-            finalcb(...value);
-            return;
+    function handleResult(result) {
+        if (result.done) {
+            return finalcb(...result.value);
         }
 
-        if (value instanceof Array) {
-            let onlypromises = true;
-            for (let i = 0; i < value.length; i++) {
-                if (!isPromise(value[i])) {
-                    onlypromises = false;
-                    break;
-                }
-            }
+        let value = result.value;
 
-            if (!onlypromises) {
-                AssertTypeOf('function', value[0]);
-                if (value.length > 1) {
-                    let args = value.slice(1);
-                    args.push(iterator);
-                    value[0](...args);
-                } else {
-                    value[0](iterator);
+        if (Array.isArray(value)) {
+            if (value.every(isPromise)) {
+                return Promise.all(value)
+                    .then(res => iterator(null, ...res))
+                    .catch(e => handleError(e, value.length));
+            } else {
+                let [fn, ...args] = value;
+                if (typeof fn !== 'function') {
+                    throw new Error("The first element of the array should be a function.");
                 }
+                fn(...args, iterator);
                 return;
             }
-
-            Promise.all(value).then(function (vs) {
-                if (vs === undefined) {
-                    vs = [];
-                }
-                if (vs.length !== value.length) {
-                    throw new Error("internal inconsistency");
-                }
-                iterator(null, ...vs);
-            }).catch(function (e) {
-                let nullargs = Array(value.length).fill(null); // We do not wish to break array destructuring
-                if (e instanceof Error) {
-                    iterator(new Err("promisePanic", e.toString()), ...nullargs);
-                } else {
-                    iterator(e, ...nullargs);
-                }
-            });
-            return;
-        }
-
+        } 
+        
         if (isPromise(value)) {
-            value.then(function (v) {
-                if (v === undefined) {
-                    v = null;
-                }
-                iterator(null, v);
-            }).catch(function (e) {
-                if (e instanceof Error) {
-                    iterator(new Err("promisePanic", e.toString()), null);
-                } else {
-                    iterator(e, null);
-                }
-            });
+            value.then(v => iterator(null, v)).catch(e => handleError(e));
             return;
         }
+        
+        throw new Error("Invalid yielded value. Expecting either a promise or an array.");
+    }
 
-        console.log(value);
-        throw new Error("invalid parameter provided to yield call in generator from ASYNC helper. We expect either a promise or an array of either only promises or where the first element is a function and the following elements are the arguments to pass to its call.");
-    };
+    function handleError(e, length = 1) {
+        const errMessage = (e instanceof Error) ? e.message : e.toString();
+        const nullargs = Array(length).fill(null);
+        iterator(new Error(`${errMessage}`), ...nullargs);
+    }
+
+    function iterator(err, ...args) {
+        if (err) {
+            // Handle the error, for now we are just throwing it
+            throw err;
+        }
+        try {
+            handleResult(generator.next(args));
+        } catch (e) {
+            // Handle synchronous errors
+            handleError(e);
+        }
+    }
 
     iterator();
 }
