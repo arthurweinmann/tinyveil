@@ -190,6 +190,14 @@ function AssertArray(src) {
     }
 }
 
+function AssertArrayOfInstances(src, t) {
+    for (let i = 0; i < src.length; i++) {
+        if (!(src[i] instanceof t)) {
+            throw new Error(`invalid parameter at index ${i}, expected a ${t}, got ${src[i]}`)
+        }
+    }
+}
+
 function AssertArrayOfType(src, t) {
     AssertArray(src);
 
