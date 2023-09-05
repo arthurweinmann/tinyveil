@@ -373,145 +373,153 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
     return { success: true };
 }
 
-const NATIVE_SCHEMAS = {
-    "#HTMLElement": HTMLElement, // the # identifies an instance of a class
-    "$HTML_ELEMENT": { // the $ identifies a schema that can be referenced in validation schemas
-        "tagName": "string",
-        "attributes": {
-            "id": "string",
-            "class": "string"
-        },
-        "children": {
-            "type": ["$HTML_ELEMENT"],
-            "optional": true,
-        }
-    },
+var HTMLElementType = class {
+    constructor() {
+        panic("you current environment does not support HTMLElement");
+    }
 };
 
-class HTMLElementType {
-    /**
-     * 
-     * @param {Object<string, any>} htmlSchema 
-     */
-    constructor(htmlSchema) {
-        AssertTypeOf("object", htmlSchema);
-        let resp = CheckObjectAgainstSchema(htmlSchema, NATIVE_SCHEMAS["$HTML_ELEMENT"], NATIVE_SCHEMAS);
-        if (!resp.success) {
-            throw new Error("invalid parameter: " + resp.message);
-        }
-        this.Schema = htmlSchema;
-    }
-
-    /**
-     * 
-     * @param {HTMLElement} node 
-     * @return {Boolean}
-     */
-    Check(node) {
-        // TODO
-        panic("not yet implemented");
-        return false;
-    }
-
-    /**
-     * @template {{innerText: string}} attr
-     * @param {Object<string, attr>} fromContent 
-     * @return {HTMLElement}
-     */
-    ToHTML(fromContent) {
-        AssertTypeOf("object", fromContent);
-
-        var htmlnode = this.#_tohtml(this.Schema);
-
-        for (const [query, attrs] of Object.entries(fromContent)) {
-            if (typeof attrs.innerText === 'string') {
-                htmlnode.querySelector(query).innerText = attrs.innerText;
+if (HTMLElement) {
+    const NATIVE_SCHEMAS = {
+        "#HTMLElement": HTMLElement, // the # identifies an instance of a class
+        "$HTML_ELEMENT": { // the $ identifies a schema that can be referenced in validation schemas
+            "tagName": "string",
+            "attributes": {
+                "id": "string",
+                "class": "string"
+            },
+            "children": {
+                "type": ["$HTML_ELEMENT"],
+                "optional": true,
             }
+        },
+    };
+
+    HTMLElementType = class {
+        /**
+         * 
+         * @param {Object<string, any>} htmlSchema 
+         */
+        constructor(htmlSchema) {
+            AssertTypeOf("object", htmlSchema);
+            let resp = CheckObjectAgainstSchema(htmlSchema, NATIVE_SCHEMAS["$HTML_ELEMENT"], NATIVE_SCHEMAS);
+            if (!resp.success) {
+                throw new Error("invalid parameter: " + resp.message);
+            }
+            this.Schema = htmlSchema;
         }
 
-        return htmlnode;
-    }
-
-    #_tohtml(schema) {
-        AssertTypeOf("object", schema);
-
-        // Create a new element based on the tagName
-        let newElement = document.createElement(schema.tagName);
-
-        // Set the element's id and class if they're present in the schema
-        if (schema.attributes.id) {
-            newElement.id = schema.attributes.id;
+        /**
+         * 
+         * @param {HTMLElement} node 
+         * @return {Boolean}
+         */
+        Check(node) {
+            // TODO
+            panic("not yet implemented");
+            return false;
         }
 
-        if (schema.attributes.class) {
-            newElement.className = schema.attributes.class;
-        }
+        /**
+         * @template {{innerText: string}} attr
+         * @param {Object<string, attr>} fromContent 
+         * @return {HTMLElement}
+         */
+        ToHTML(fromContent) {
+            AssertTypeOf("object", fromContent);
 
-        // Recurse into children, if any
-        if (Array.isArray(schema.children)) {
-            for (let i = 0; i < schema.children.length; i++) {
-                if (schema.children[i] !== null) {
-                    let childElement = this.#_tohtml(schema.children[i]);
-                    newElement.appendChild(childElement);
+            var htmlnode = this.#_tohtml(this.Schema);
+
+            for (const [query, attrs] of Object.entries(fromContent)) {
+                if (typeof attrs.innerText === 'string') {
+                    htmlnode.querySelector(query).innerText = attrs.innerText;
                 }
             }
+
+            return htmlnode;
         }
 
-        return newElement;
-    }
+        #_tohtml(schema) {
+            AssertTypeOf("object", schema);
 
-    /**
-     * 
-     * @param {string} htmlString 
-     * @return {HTMLElementType}
-     */
-    static FromString(htmlString) {
-        AssertTypeOf('string', htmlString);
-        return HTMLElementType.FromNode(CreateElementFromHTML(htmlString));
-    }
+            // Create a new element based on the tagName
+            let newElement = document.createElement(schema.tagName);
 
-    /**
-     * 
-     * @param {HTMLElement} element 
-     * @return {HTMLElementType}
-     */
-    static FromNode(element) {
-        AssertInstOf(HTMLElement, element);
-
-        let queue = [{ element: element, parentJson: null }];
-
-        let rootJson;
-        while (queue.length > 0) {
-            let current = queue.shift();
-            let currentElement = current.element;
-            let parentJson = current.parentJson;
-
-            // Initialize the JSON object for this element.
-            let json = {
-                tagName: currentElement.tagName.toLowerCase(),
-                attributes: {
-                    id: currentElement.id ? currentElement.id : "",
-                    class: currentElement.className ? currentElement.className : ""
-                },
-                children: []
-            };
-
-            if (parentJson !== null) {
-                parentJson.children.push(json);
-            } else {
-                rootJson = json;
+            // Set the element's id and class if they're present in the schema
+            if (schema.attributes.id) {
+                newElement.id = schema.attributes.id;
             }
 
-            // Loop through all children of the current element
-            for (let i = 0; i < currentElement.children.length; i++) {
-                let childElement = currentElement.children[i];
-                if (childElement instanceof HTMLElement) {
-                    queue.push({ element: childElement, parentJson: json });
+            if (schema.attributes.class) {
+                newElement.className = schema.attributes.class;
+            }
+
+            // Recurse into children, if any
+            if (Array.isArray(schema.children)) {
+                for (let i = 0; i < schema.children.length; i++) {
+                    if (schema.children[i] !== null) {
+                        let childElement = this.#_tohtml(schema.children[i]);
+                        newElement.appendChild(childElement);
+                    }
                 }
             }
+
+            return newElement;
         }
 
-        return new HTMLElementType(rootJson);
+        /**
+         * 
+         * @param {string} htmlString 
+         * @return {HTMLElementType}
+         */
+        static FromString(htmlString) {
+            AssertTypeOf('string', htmlString);
+            return HTMLElementType.FromNode(CreateElementFromHTML(htmlString));
+        }
+
+        /**
+         * 
+         * @param {HTMLElement} element 
+         * @return {HTMLElementType}
+         */
+        static FromNode(element) {
+            AssertInstOf(HTMLElement, element);
+
+            let queue = [{ element: element, parentJson: null }];
+
+            let rootJson;
+            while (queue.length > 0) {
+                let current = queue.shift();
+                let currentElement = current.element;
+                let parentJson = current.parentJson;
+
+                // Initialize the JSON object for this element.
+                let json = {
+                    tagName: currentElement.tagName.toLowerCase(),
+                    attributes: {
+                        id: currentElement.id ? currentElement.id : "",
+                        class: currentElement.className ? currentElement.className : ""
+                    },
+                    children: []
+                };
+
+                if (parentJson !== null) {
+                    parentJson.children.push(json);
+                } else {
+                    rootJson = json;
+                }
+
+                // Loop through all children of the current element
+                for (let i = 0; i < currentElement.children.length; i++) {
+                    let childElement = currentElement.children[i];
+                    if (childElement instanceof HTMLElement) {
+                        queue.push({ element: childElement, parentJson: json });
+                    }
+                }
+            }
+
+            return new HTMLElementType(rootJson);
+        }
     }
 }
 
@@ -825,12 +833,12 @@ function ASYNC(code, finalcb) {
         if (Array.isArray(value)) {
             if (value.every(isPromise)) {
                 return Promise.all(value)
-                    .then(function(res){
-                        if(res.length !== value.length) {
+                    .then(function (res) {
+                        if (res.length !== value.length) {
                             panic(`we received a number of responses ${res.length} which does not match the number of promises ${value.length}`);
                         }
 
-                        for(let i = 0; i < res.length; i++) {
+                        for (let i = 0; i < res.length; i++) {
                             if (!Array.isArray(res[i])) {
                                 panic("Promises must return an array of results to work with our choosen specification");
                             }
@@ -862,7 +870,7 @@ function ASYNC(code, finalcb) {
         }
 
         if (isPromise(value)) {
-            value.then(function(v){
+            value.then(function (v) {
                 if (Array.isArray(v)) {
                     if (v.length === 0) {
                         panic("We need a return array with at least null or Err as the first element");
