@@ -937,6 +937,12 @@ class Err {
     }
 }
 
+function MergeArraysAndRemoveDuplicates(arr1, arr2) {
+    const mergedArray = arr1.concat(arr2); // Merge the arrays using the concat() function
+    const uniqueArray = [...new Set(mergedArray)]; // Use the Set() function to remove duplicates and convert back to an array
+    return uniqueArray;
+}
+
 // This function finds all hexadecimal escape sequences and converts them to their ASCII representation
 function ReplaceHexCodesWithCharacters(str) {
     str = str.toString();
