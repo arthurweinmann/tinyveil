@@ -908,9 +908,15 @@ function ASYNC(code, finalcb) {
     iterator();
 }
 
-function ASYNCPromise(code) {
+function ASYNCPromise(code, ...defers) {
+    AssertObjectSchema({ defers: defers }, {
+        defers: { optional: true, type: ['function'] },
+    });
     return new Promise(function (resolve, reject) {
         ASYNC(code, function (err, data) {
+            for (let i = 0; i < defers.length; i++) {
+                defers[i]();
+            }
             if (err !== null) {
                 reject(err);
                 return
