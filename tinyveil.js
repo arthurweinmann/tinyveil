@@ -835,13 +835,13 @@ function ASYNC(code, finalcb) {
                 fn(...args, iterator);
                 return;
             }
-        } 
-        
+        }
+
         if (isPromise(value)) {
             value.then(v => iterator(null, v)).catch(e => handleError(e));
             return;
         }
-        
+
         throw new Error("Invalid yielded value. Expecting either a promise or an array.");
     }
 
@@ -902,6 +902,14 @@ function Asyncmethod(objinstance, methodname) {
         throw new Error("Object does not contain the property:" + methodname);
     }
     return objinstance[methodname].bind(objinstance);
+}
+
+/**
+ * @param {any} arg Passed to resolve as argument
+ * @return {Promise} immediately resolved
+ */
+function DonePromise(arg) {
+    return new Promise(function (resolve, reject) { resolve(arg); });
 }
 
 // ------------------------------------------
