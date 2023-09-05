@@ -1133,7 +1133,8 @@ function stringLog() {
  * @param {string} message 
  */
 function panic(message) {
-    throw new Error(message);
+    let err = new Error("we want the error's Ariane's thread (french idiom)");
+    throw new Error(message + `\n${err.stack}`);
 }
 
 function isPromise(p) {
