@@ -825,7 +825,31 @@ function ASYNC(code, finalcb) {
         if (Array.isArray(value)) {
             if (value.every(isPromise)) {
                 return Promise.all(value)
-                    .then(res => iterator(null, ...res))
+                    .then(function(res){
+                        if(res.length !== value.length) {
+                            panic(`we received a number of responses ${res.length} which does not match the number of promises ${value.length}`);
+                        }
+
+                        for(let i = 0; i < res.length; i++) {
+                            if (!Array.isArray(res[i])) {
+                                panic("Promises must return an array of results to work with our choosen specification");
+                            }
+                            if (res[i].length === 0) {
+                                panic("We need promises to return array with at least null or Err as the first element");
+                            }
+                            if (res[i][0] !== null) {
+                                handleError(res[i][0]);
+                                return;
+                            }
+                            if (res[i].length > 1) {
+                                res[i] = res[i].slice(1);
+                            } else {
+                                res[i] = null;
+                            }
+                        }
+
+                        iterator(null, ...res)
+                    })
                     .catch(e => handleError(e, value.length));
             } else {
                 let [fn, ...args] = value;
@@ -838,7 +862,24 @@ function ASYNC(code, finalcb) {
         }
 
         if (isPromise(value)) {
-            value.then(v => iterator(null, v)).catch(e => handleError(e));
+            value.then(function(v){
+                if (Array.isArray(v)) {
+                    if (v.length === 0) {
+                        panic("We need a return array with at least null or Err as the first element");
+                    }
+                    if (v[0] !== null) {
+                        handleError(v[0]);
+                        return;
+                    }
+                    if (v.length > 1) {
+                        iterator(null, ...v.slice(1));
+                    } else {
+                        iterator(null);
+                    }
+                } else {
+                    iterator(null, v);
+                }
+            }).catch(e => handleError(e));
             return;
         }
 
