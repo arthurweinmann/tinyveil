@@ -373,12 +373,6 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
     return { success: true };
 }
 
-var HTMLElementType = class {
-    constructor() {
-        panic("you current environment does not support HTMLElement");
-    }
-};
-
 class HTMLElementType {
     #NATIVE_SCHEMAS = {
         "#HTMLElement": HTMLElement, // the # identifies an instance of a class
