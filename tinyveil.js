@@ -971,15 +971,15 @@ function ASYNCPromise(code, ...defers) {
         defers: { optional: true, type: ['function'] },
     });
     return new Promise(function (resolve, reject) {
-        ASYNC(code, function (err, data) {
+        ASYNC(code, function (err, ...args) {
             for (let i = 0; i < defers.length; i++) {
                 defers[i]();
             }
             if (err !== null) {
-                reject(err);
+                reject([err, ...Array(args.length).fill(null)]);
                 return
             }
-            resolve(data);
+            resolve([null, ...args]);
         });
     });
 }
