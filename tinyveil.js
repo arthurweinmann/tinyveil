@@ -266,8 +266,23 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
     for (let key in schema) {
         // the key may be modified below in this iteration if it begins with .
         let requiredType;
+        
+        // for `map` type only
+        let keytype = null;
+        let valuetype = null;
+
         if (schema[key].type) {
             requiredType = schema[key].type;
+            if (requiredType === 'map') {
+                if (typeof schema[key].keytype !== 'string') {
+                    panic("When using type `map` we also need a string keytype field, for example 'number' or 'string'");
+                }
+                if (schema[key].valuetype === undefined) {
+                    panic("When using type `map` we also need a valuetype occupying the role of the classic type field");
+                }
+                keytype = schema[key].keytype;
+                valuetype = schema[key].valuetype;
+            }
         } else {
             requiredType = schema[key];
         }
@@ -330,6 +345,31 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             let resp = CheckObjectAgainstSchema(obj[key], requiredType, referencedSchemas);
             if (!resp.success) {
                 return resp;
+            }
+        } else if (requiredType === "map") {
+            // If the corresponding Object property is not an object, return false
+            if (typeof obj[key] !== "object" || Array.isArray(obj[key])) {
+                return { success: false, message: stringLog(`Expected object(map) for property: ${key}`) };
+            }
+            for (const [k, v] of Object.entries(obj[key])) {
+                let checkresp = typeAndInstanceOfCheck(k, keytype);
+                if (!checkresp.success) {
+                    return { success: false, message: stringLog(`We got an invalid key in map of expected key type ${keytype}: ${checkresp.message}`) };
+                }
+                switch (true) {
+                    default:
+                        let checkresp = typeAndInstanceOfCheck(v, valuetype);
+                        if (!checkresp.success) {
+                            return { success: false, message: stringLog(`We got an invalid value in map: ${checkresp.message}`) };
+                        }
+                    case typeof valuetype === "object": // object or array
+                        // Recurse into the value
+                        let resp = CheckObjectAgainstSchema(v, valuetype, referencedSchemas);
+                        if (!resp.success) {
+                            return { success: false, message: stringLog(`We got an invalid value in map: ${resp.message}`) };
+                        }
+                        break;
+                }
             }
         } else if (Array.isArray(requiredType)) {
             // If requiredType is an array, check if the object value is an array of the correct type
