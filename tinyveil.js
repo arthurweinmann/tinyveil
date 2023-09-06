@@ -248,6 +248,7 @@ function AssertObjectSchema(obj, schema, referencedSchemas) {
 /**
  * Function to check Object against a type schema with the possibility to reference schemas as the type of one or more fields.
  * 
+ * TODO: refactor
  * @template {{success: boolean, message: string}} resp
  * @param {Object<string, any>} obj 
  * @param {Object<string, any>} schema
@@ -260,6 +261,12 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
 
     if (typeof obj !== 'object' || obj === null || obj === undefined) {
         return { success: false, message: stringLog("Invalid object to check:", obj) };
+    }
+
+    // hack to handle root map type
+    if (schema.type !== undefined && schema.keytype !== undefined && schema.valuetype !== undefined) {
+        obj = {____: obj};
+        schema = {____: schema};
     }
 
     // Iterate over each property in the schema
