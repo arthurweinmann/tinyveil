@@ -353,22 +353,25 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             }
             for (let [k, v] of Object.entries(obj[key])) {
                 // in the case of maps, in javascript an object's keys are always strings even when the object values are set with number keys, they are converted.
-                if (keytype === 'number') {
-                    k = parseFloat(k);
-                }
-                if (keytype === 'boolean') {
-                    switch (StringToBytes.toLowerCase()) {
-                        case "true":
-                            k = true;
-                            break;
-                        case "false":
-                            k = false;
-                            break;
-                    }
-                }
-                let checkresp = typeAndInstanceOfCheck(k, keytype);
-                if (!checkresp.success) {
-                    return { success: false, message: stringLog(`We got an invalid key in map of expected key type ${keytype}: ${checkresp.message}`) };
+                switch (keytype) {
+                    default:
+                        panic(`We do not support keys of type ${keytype} in a map type`);
+                    case "number":
+                        let tmp = parseFloat(k);
+                        if (isNaN(tmp) || typeof tmp !== 'number') {
+                            return {success: false, message: stringLog("We got an invalid map key", k, "which should be a string parsable as a number")};
+                        }
+                        break;
+                    case "boolean":
+                        if (!["true", "false"].includes(k.toLowerCase())) {
+                            return {success: false, message: stringLog("We got an invalid map key", k, "which should be a string parsable as a boolean true or false")};
+                        }
+                        break;
+                    case "string":
+                        if (typeof k !== 'string') {
+                            return {success: false, message: stringLog("We got an invalid map key", k, "which should be a string")};
+                        }
+                        break;
                 }
                 switch (true) {
                     default:
@@ -376,6 +379,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                         if (!checkresp.success) {
                             return { success: false, message: stringLog(`We got an invalid value in map: ${checkresp.message}`) };
                         }
+                        break;
                     case typeof valuetype === "object": // object or array
                         // Recurse into the value
                         let resp = CheckObjectAgainstSchema(v, valuetype, referencedSchemas);
