@@ -1196,7 +1196,10 @@ function stringLog() {
  * Panic is a golang-ish shorthand for throw new Error({message})
  * @param {string} message 
  */
-function panic(message) {
+function panic(message, ...args) {
+    if (args.length > 0) {
+        throw new Error(stringLog(message, ...args));
+    }
     throw new Error(message);
 }
 
