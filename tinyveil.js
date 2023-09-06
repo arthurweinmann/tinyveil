@@ -352,6 +352,20 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                 return { success: false, message: stringLog(`Expected object(map) for property: ${key}`) };
             }
             for (const [k, v] of Object.entries(obj[key])) {
+                // in the case of maps, in javascript an object's keys are always strings even when the object values are set with number keys, they are converted.
+                if (keytype === 'number') {
+                    k = parseFloat(k);
+                }
+                if (keytype === 'boolean') {
+                    switch (StringToBytes.toLowerCase()) {
+                        case "true":
+                            k = true;
+                            break;
+                        case "false":
+                            k = false;
+                            break;
+                    }
+                }
                 let checkresp = typeAndInstanceOfCheck(k, keytype);
                 if (!checkresp.success) {
                     return { success: false, message: stringLog(`We got an invalid key in map of expected key type ${keytype}: ${checkresp.message}`) };
