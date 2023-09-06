@@ -351,7 +351,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             if (typeof obj[key] !== "object" || Array.isArray(obj[key])) {
                 return { success: false, message: stringLog(`Expected object(map) for property: ${key}`) };
             }
-            for (const [k, v] of Object.entries(obj[key])) {
+            for (let [k, v] of Object.entries(obj[key])) {
                 // in the case of maps, in javascript an object's keys are always strings even when the object values are set with number keys, they are converted.
                 if (keytype === 'number') {
                     k = parseFloat(k);
