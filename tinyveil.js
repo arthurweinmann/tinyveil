@@ -885,7 +885,7 @@ function SetStyle(node, styleObj) {
 
 function SetMStyle(styleObj, ...nodes) {
     AssertObjectSchema(styleObj, {type: "map", keytype: "string", valuetype: "string"});
-    AssertObjectSchema({nodes: nodes}, {nodes: ["enum(#HTMLElement, #SVGElement)"]});
+    AssertObjectSchema({nodes: nodes}, {nodes: ["enum(#HTMLElement, #SVGElement)"]}, {"#HTMLElement": HTMLElement, "#SVGElement": SVGElement});
     for (let prop in styleObj) {
         if (styleObj.hasOwnProperty(prop)) {
             for (let i = 0; i < nodes.length; i++) {
