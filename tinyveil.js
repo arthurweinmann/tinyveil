@@ -867,6 +867,35 @@ function CreateManyElementsFromHTML(htmlString) {
 }
 
 /**
+ * 
+ * @param {HTMLElement|SVGElement} node 
+ * @param {Object<string, string>} styleObj
+ * @return {HTMLElement}
+ */
+function SetStyle(node, styleObj) {
+    AssertInstOfOR(node, HTMLElement, SVGElement);
+    AssertObjectSchema(styleObj, {type: "map", keytype: "string", valuetype: "string"});
+    for (let prop in styleObj) {
+        if (styleObj.hasOwnProperty(prop)) {
+            node.style[prop] = styleObj[prop];
+        }
+    }
+    return node;
+}
+
+function SetMStyle(styleObj, ...nodes) {
+    AssertObjectSchema(styleObj, {type: "map", keytype: "string", valuetype: "string"});
+    AssertObjectSchema({nodes: nodes}, {nodes: ["enum(#HTMLElement, #SVGElement)"]});
+    for (let prop in styleObj) {
+        if (styleObj.hasOwnProperty(prop)) {
+            for (let i = 0; i < nodes.length; i++) {
+                nodes[i].style[prop] = styleObj[prop];
+            }
+        }
+    }
+}
+
+/**
  * One final callback is great, we want to avoid callback hell consisting of many nested callbacks.
  * We want readable linear and flat code. We do not want obscurity and contamination as with async/await.
  * @param {Function} code 
