@@ -6,11 +6,13 @@
 
 Tinyveil is a library providing a type system, protocols and helpers in Vanilla Javascript. The goal is to make development in Vanilla JS faster, safer and more readable. 
 
+Tinyveil is in active development and research. Currently, it offers an immediate and proactive way of validating data types during the development process. It throws errors immediately when a type mismatch or invalid parameter is detected, facilitating early error discovery and making debugging easier. We also have an helper to validate the type of an Object. This function is then used in a WebsocketAPI class helper to validate both the request object sent to a backend and the response received from the same backend.
+
+# Why
+
 Tinyveil aims to occupy the role of a library and not a framework like typescript or reactjs. The best reason to write a library in plain JavaScript is that it lasts forever. This is arguably JavaScript’s single most underrated feature. It also runs in the browser directly, without a runtime or a compilation step. 
 
 With a framework or a compiler, you can easily find yourself stuck with it even after outgrowning it or disliking its ecosystem (or the framework has stagnated for too long), and you want to switch. This can be really hard, because frameworks shape your code, and each framework is different, so there is no easy migration path. The contact surface with libraries, on the other hand, is often very small, making a switch from one library to another a much smaller task, with a low blast radius.
-
-Tinyveil is in active development and research. Currently, it offers an immediate and proactive way of validating data types during the development process. It throws errors immediately when a type mismatch or invalid parameter is detected, facilitating early error discovery and making debugging easier. We also have an helper to validate the type of an Object. This function is then used in a WebsocketAPI class helper to validate both the request object sent to a backend and the response received from the same backend.
 
 This library is a simple way to enforce strict type checking with zero maintenance costs. Even if this library changes in the future, you will be able to keep your imported copy from a previous version, which will continue to work as long as browsers exist since it is written in vanilla javascript only.
 
