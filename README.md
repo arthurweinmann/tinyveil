@@ -8,6 +8,8 @@ Tinyveil is a library providing a type system, protocols and helpers in Vanilla 
 
 Tinyveil is in active development and research. Currently, it offers an immediate and proactive way of validating data types during the development process. It throws errors immediately when a type mismatch or invalid parameter is detected, facilitating early error discovery and making debugging easier. We also have an helper to validate the type of an Object. This function is then used in a WebsocketAPI class helper to validate both the request object sent to a backend and the response received from the same backend.
 
+We also have a way to write async code in a flat way without the contaminating async/await keywors and with the possibility to mix it with a single callback and promises.
+
 # Why
 
 Tinyveil aims to occupy the role of a library and not a framework like typescript or reactjs. The best reason to write a library in plain JavaScript is that it lasts forever. This is arguably JavaScript’s single most underrated feature. It also runs in the browser directly, without a runtime or a compilation step. 
