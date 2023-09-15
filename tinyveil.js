@@ -212,20 +212,20 @@ function AssertArrayOfType(src, t) {
     for (let i = 0; i < src.length; i++) {
         if (t === null) {
             if (src[i] !== null) {
-                throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
+                panic(`invalid parameter at index ${i}, expected a ${t}, but got`, src[i]);
             }
         } else if (t === undefined) {
             if (src[i] !== undefined) {
-                throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
+                panic(`invalid parameter at index ${i}, expected a ${t}, but got`, src[i]);
             }
         } else if (customtype !== null) {
             if (!customtype(src[i])) {
-                throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
+                panic(`invalid parameter at index ${i}, expected a ${t}, but got`, src[i]);
             }
         } else if (typeof src[i] !== t) {
-            throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
+            panic(`invalid parameter at index ${i}, expected a ${t}, but got`, src[i]);
         } else if (t === 'number' && isNaN(src[i])) {
-            throw new Error(`invalid parameter at index ${i}, expected a ${t}`);
+            panic(`invalid parameter at index ${i}, expected a ${t}, but got`, src[i]);
         }
     }
 }
