@@ -223,7 +223,7 @@ function AssertArrayOfType(src, t) {
                 panic(`invalid parameter at index ${i}, expected a ${t}, but got`, src[i]);
             }
         } else if (typeof src[i] !== t) {
-            panic(`invalid parameter at index ${i}, expected a ${t}, but got`, src[i]);
+            panic(`invalid parameter at index ${i}, expected a ${t}, but got`, src[i], "which is a", typeof src[i]);
         } else if (t === 'number' && isNaN(src[i])) {
             panic(`invalid parameter at index ${i}, expected a ${t}, but got`, src[i]);
         }
