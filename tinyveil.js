@@ -265,15 +265,15 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
 
     // hack to handle root map type
     if (schema.type !== undefined && schema.keytype !== undefined && schema.valuetype !== undefined) {
-        obj = {____: obj};
-        schema = {____: schema};
+        obj = { ____: obj };
+        schema = { ____: schema };
     }
 
     // Iterate over each property in the schema
     for (let key in schema) {
         // the key may be modified below in this iteration if it begins with .
         let requiredType;
-        
+
         // for `map` type only
         let keytype = null;
         let valuetype = null;
@@ -366,17 +366,17 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                     case "number":
                         let tmp = parseFloat(k);
                         if (isNaN(tmp) || typeof tmp !== 'number') {
-                            return {success: false, message: stringLog("We got an invalid map key", k, "which should be a string parsable as a number")};
+                            return { success: false, message: stringLog("We got an invalid map key", k, "which should be a string parsable as a number") };
                         }
                         break;
                     case "boolean":
                         if (!["true", "false"].includes(k.toLowerCase())) {
-                            return {success: false, message: stringLog("We got an invalid map key", k, "which should be a string parsable as a boolean true or false")};
+                            return { success: false, message: stringLog("We got an invalid map key", k, "which should be a string parsable as a boolean true or false") };
                         }
                         break;
                     case "string":
                         if (typeof k !== 'string') {
-                            return {success: false, message: stringLog("We got an invalid map key", k, "which should be a string")};
+                            return { success: false, message: stringLog("We got an invalid map key", k, "which should be a string") };
                         }
                         break;
                 }
@@ -874,7 +874,7 @@ function CreateManyElementsFromHTML(htmlString) {
  */
 function SetStyle(node, styleObj) {
     AssertInstOfOR(node, HTMLElement, SVGElement);
-    AssertObjectSchema(styleObj, {type: "map", keytype: "string", valuetype: "string"});
+    AssertObjectSchema(styleObj, { type: "map", keytype: "string", valuetype: "string" });
     for (let prop in styleObj) {
         if (styleObj.hasOwnProperty(prop)) {
             node.style[prop] = styleObj[prop];
@@ -884,8 +884,8 @@ function SetStyle(node, styleObj) {
 }
 
 function SetMStyle(styleObj, ...nodes) {
-    AssertObjectSchema(styleObj, {type: "map", keytype: "string", valuetype: "string"});
-    AssertObjectSchema({nodes: nodes}, {nodes: ["enum(#HTMLElement, #SVGElement)"]}, {"#HTMLElement": HTMLElement, "#SVGElement": SVGElement});
+    AssertObjectSchema(styleObj, { type: "map", keytype: "string", valuetype: "string" });
+    AssertObjectSchema({ nodes: nodes }, { nodes: ["enum(#HTMLElement, #SVGElement)"] }, { "#HTMLElement": HTMLElement, "#SVGElement": SVGElement });
     for (let prop in styleObj) {
         if (styleObj.hasOwnProperty(prop)) {
             for (let i = 0; i < nodes.length; i++) {
@@ -1249,4 +1249,11 @@ function isPromise(p) {
         return true;
     }
     return false;
+}
+
+// we wrap into our own function to be able to remove it automatically later on during the production build process
+function LogExecutionTime(func) {
+    console.time("Execution Time"); // Start timer
+    func(); // Execute the function
+    console.timeEnd("Execution Time"); // End timer and log the result
 }
