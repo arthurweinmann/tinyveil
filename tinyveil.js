@@ -1251,9 +1251,14 @@ function isPromise(p) {
     return false;
 }
 
-// we wrap into our own function to be able to remove it automatically later on during the production build process
-function LogExecutionTime(func) {
-    console.time("Execution Time"); // Start timer
+/**
+ * We wrap into our own function to be able to remove it automatically later on during the production build process
+ * @param {string} identifier 
+ * @param {Function} func 
+ */
+function LogExecutionTime(identifier, func) {
+    AssertTypeOf('function', func);
+    console.time("Execution Time of " + identifier); // Start timer
     func(); // Execute the function
-    console.timeEnd("Execution Time"); // End timer and log the result
+    console.timeEnd("Execution Time of " + identifier); // End timer and log the result
 }
