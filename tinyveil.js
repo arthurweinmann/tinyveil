@@ -846,6 +846,18 @@ function CreateElementFromHTML(htmlString) {
     var div = document.createElement('div');
     div.innerHTML = htmlString.trim();
 
+    let trimwhitespaces = function (node) {
+        for (let i = 0; i < node.childNodes.length; i++) {
+            let child = node.childNodes[i];
+            if (child.nodeType === 3) {
+                child.textContent = child.textContent.trim();
+            } else if (child.nodeType === 1) {
+                trimwhitespaces(child);
+            }
+        }
+    };
+    trimwhitespaces(div);
+
     // Change this to div.childNodes to support multiple top-level nodes.
     return div.firstChild;
 }
