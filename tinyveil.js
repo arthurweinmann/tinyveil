@@ -244,6 +244,15 @@ function AssertObjectSchema(obj, schema, referencedSchemas) {
     }
 }
 
+/**
+ * 
+ * @param {any} v 
+ * @return {Boolean}
+ */
+function IsNumber(v) {
+    return typeof v === 'number' && !isNaN(v);
+}
+
 
 /**
  * Function to check Object against a type schema with the possibility to reference schemas as the type of one or more fields.
