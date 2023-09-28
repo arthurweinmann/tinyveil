@@ -782,7 +782,7 @@ class WebsocketAPI {
      * 
      * @param {string} routename 
      * @param {object} message 
-     * @param {Function} cb(err:Err, data:object)
+     * @param {function(Err|null, object|null):void} cb(err:Err, data:object)
      * @return {Boolean}
      */
     Send(routename, message, cb) {
@@ -919,8 +919,8 @@ function SetMStyle(styleObj, ...nodes) {
 /**
  * One final callback is great, we want to avoid callback hell consisting of many nested callbacks.
  * We want readable linear and flat code. We do not want obscurity and contamination as with async/await.
- * @param {Function} code 
- * @param {Function} finalcb 
+ * @param {function():void} code 
+ * @param {function(...any):void} finalcb 
  */
 function ASYNC(code, finalcb) {
     if (typeof code !== 'function' || typeof finalcb !== 'function') {
@@ -1275,7 +1275,7 @@ function isPromise(p) {
 /**
  * We wrap into our own function to be able to remove it automatically later on during the production build process
  * @param {string} identifier 
- * @param {Function} func 
+ * @param {function():void} func 
  */
 function LogExecutionTime(identifier, func) {
     AssertTypeOf('function', func);
