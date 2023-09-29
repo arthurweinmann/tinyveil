@@ -8,7 +8,7 @@ Tinyveil is a library providing a type system, protocols and helpers in Vanilla 
 
 Tinyveil is in active development and research. Currently, it offers an immediate and proactive way of validating data types during the development process. It throws errors immediately when a type mismatch or invalid parameter is detected, facilitating early error discovery and making debugging easier. We also have an helper to validate the type of an Object. This function is then used in a WebsocketAPI class helper to validate both the request object sent to a backend and the response received from the same backend.
 
-We also have a way to write async code in a flat way without the contaminating async/await keywords and with the possibility to mix it with a single callback and promises.
+We also have helpers to write async code in a flat way without the contaminating async/await keywords and with the possibility to mix it with a single callback and promises.
 
 # Why
 
@@ -26,14 +26,14 @@ To illustrate why a library may be a better idea than a framework, here is how y
 Arthur$ npx create-react-app my-app
 ```
 
-We can then list the number of dependencies in this newly created empty react application without any feature other than what comes out of the box:
+After a few minutes of installation, we can list the number of dependencies in this newly created empty react application without any feature other than what comes out of the box:
 
 ```bash
 Arthur$ cd my-app
 Arthur$ npm ls --all | wc -l
 ```
 
-There is more than 3000 dependencies in a blank react project! You did not even write a single line of code for your application yet and you already have much complexity, entropy and future maintenance cost out of the box.
+There is 3228 dependencies in a blank react project! And 6 high severity vulnerabilities indicated by the npx command! (measured on 29th September 2023) You did not even write a single line of code for your application yet and you already have much complexity, entropy and future maintenance cost out of the box.
 
 # Current Features
 
