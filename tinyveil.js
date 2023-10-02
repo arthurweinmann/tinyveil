@@ -1074,6 +1074,91 @@ function DonePromise(arg) {
     return new Promise(function (resolve, reject) { resolve(arg); });
 }
 
+/**
+ * OrderedConcurrentUpdate makes sure a variable is updated by promises running concurrently in the same order in which they locked this class
+ */
+class OrderedConcurrentUpdate {
+    #variable = null;
+    #queue = [];
+
+    constructor() {
+    }
+
+    /**
+     * You must call this method only when it is sure there is no pending promises.
+     * If there are, use the Lock method instead to register an update callback and wait in line for your turn
+     * @param {any} val 
+     */
+    Set(val) {
+        if (this.#queue.length > 0) {
+            panic("We cannot set this value when they are still promises working on it");
+        }
+        this.#variable = val;
+    }
+
+    Get() {
+        return this.#variable;
+    }
+
+    /**
+     * 
+     * @return {boolean}
+     */
+    OperationInProgress() {
+        return this.#queue.length > 0;
+    }
+
+    /**
+     * 
+     * @param {Promise} promise 
+     * @param {function(previousvalue):(newvalue)} updateCallback 
+     * @return {Promise}
+     */
+    Lock(promise, updateCallback) {
+        this.#queue.push({ updateCallback });
+        return MakeQueryablePromise(promise).then(() => {
+            this.#runUnlockCallback();
+        });
+    }
+
+    #runUnlockCallback() {
+        while (this.#queue.length > 0 && this.#queue[0].promise.isFulfilled()) {
+            let { updateCallback } = this.#queue.shift();
+            this.#variable = updateCallback(this.#variable);
+        }
+    }
+}
+
+/**
+ * 
+ * @param {Promise} promise 
+ * @return {Promise}
+ */
+function MakeQueryablePromise(promise) {
+    var isPending = true;
+    var isRejected = false;
+    var isFulfilled = false;
+
+    var result = promise.then(
+        function (v) {
+            isFulfilled = true;
+            isPending = false;
+            return v;
+        },
+        function (e) {
+            isRejected = true;
+            isPending = false;
+            throw e;
+        }
+    );
+
+    result.isFulfilled = function () { return isFulfilled; };
+    result.isPending = function () { return isPending; };
+    result.isRejected = function () { return isRejected; };
+    return result;
+}
+
+
 // ------------------------------------------
 //                UTILS
 // ------------------------------------------
