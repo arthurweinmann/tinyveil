@@ -1081,7 +1081,12 @@ class OrderedConcurrentUpdate {
     #variable = null;
     #queue = [];
 
-    constructor() {
+    /**
+     * 
+     * @param {any} initialvalue 
+     */
+    constructor(initialvalue) {
+        this.#variable = initialvalue;
     }
 
     /**
