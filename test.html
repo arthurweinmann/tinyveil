@@ -100,7 +100,7 @@
             const ocu6 = new OrderedConcurrentUpdate(0);
             ocu6.RunAtQueueEnd(prev => {
                 ocu6.RunAtQueueEnd(prevInner => prevInner + 2);
-                return ocu6.Get() * 3;
+                return prev * 3;
             });
             await delay(100);
             assert.isEqual(ocu6.Get(), 2, "Nested reactions with Nested RunAtQueueEnd did not execute correctly");
@@ -111,14 +111,14 @@
             ocu7.RunAtQueueEnd(prev => {
                 ocu7.Lock(delay(100), function (prev2) {
                     ocu7.RunAtQueueEnd(function (prevInner) {
-                        return ocu7.Get() * 2
+                        return prevInner * 2
                     });
-                    return ocu7.Get() + 3;
+                    return prev2 + 3;
                 });
                 ocu7.RunAtQueueEnd(function (prevInner) {
-                    return ocu7.Get() * 5;
+                    return prevInner * 5;
                 });
-                return ocu7.Get() * 4;
+                return prev * 4;
             });
             await delay(300);
             assert.isEqual(ocu7.Get(), 30, "Nested reactions with Nested RunAtQueueEnd and Lock did not execute correctly");
@@ -128,9 +128,9 @@
             const ocu8 = new OrderedConcurrentUpdate(0);
             ocu8.RunAtQueueEnd(prev => prev + 2).Lock(delay(100), function (prev) {
                 ocu8.RunAtQueueEnd(function (prevInner) {
-                    return ocu8.Get() * 2
+                    return prevInner * 2
                 });
-                return ocu8.Get() + 3;
+                return prev + 3;
             }.bind(this));
             ocu8.RunAtQueueEnd(prevInner => prevInner * 5);
             await delay(300);

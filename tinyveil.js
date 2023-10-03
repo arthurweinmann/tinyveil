@@ -1074,14 +1074,15 @@ function DonePromise(arg) {
     return new Promise(function (resolve, reject) { resolve(arg); });
 }
 
-const NoOP = {_noop: true};
+const NoOP = { _noop: true };
 
 /**
- * OrderedConcurrentUpdate makes sure a variable is updated by promises running concurrently in the same order in which they locked this class
+ * OrderedConcurrentUpdate makes sure a variable is updated by promises running concurrently in the same order in which they locked this class.
  */
 class OrderedConcurrentUpdate {
     #variable = null;
     #queue = [];
+    #running = false;
 
     /**
      * 
@@ -1116,8 +1117,6 @@ class OrderedConcurrentUpdate {
     }
 
     /**
-     * To nest RunAtQueueEnd calls inside the provided updateCallback, you must overwrite the value passed as argument to updateCallback
-     * each time with the value from the Get method from this class.
      * @param {function(previousvalue):newvalue} callback 
      * @return {OrderedConcurrentUpdate}
      */
@@ -1142,8 +1141,8 @@ class OrderedConcurrentUpdate {
     }
 
     #runUnlockCallback() {
-        if (this.running) {return;}
-        this.running = true;
+        if (this.#running) { return; }
+        this.#running = true;
         while (this.#queue.length > 0 &&
             (
                 this.#queue[0].queryablepromise === null ||
@@ -1156,7 +1155,7 @@ class OrderedConcurrentUpdate {
                 this.#variable = tmp;
             }
         }
-        this.running = false;
+        this.#running = false;
     }
 }
 
