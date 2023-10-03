@@ -1142,6 +1142,8 @@ class OrderedConcurrentUpdate {
     }
 
     #runUnlockCallback() {
+        if (this.running) {return;}
+        this.running = true;
         while (this.#queue.length > 0 &&
             (
                 this.#queue[0].queryablepromise === null ||
@@ -1154,6 +1156,7 @@ class OrderedConcurrentUpdate {
                 this.#variable = tmp;
             }
         }
+        this.running = false;
     }
 }
 

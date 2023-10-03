@@ -103,7 +103,7 @@
                 return ocu6.Get() * 3;
             });
             await delay(100);
-            assert.isEqual(ocu6.Get(), 6, "Nested reactions with Nested RunAtQueueEnd did not execute correctly");
+            assert.isEqual(ocu6.Get(), 2, "Nested reactions with Nested RunAtQueueEnd did not execute correctly");
 
             // Test 10: Nested reactions using Nested RunAtQueueEnd and Lock
             console.log("Test 10: Nested reactions with Nested RunAtQueueEnd and Lock");
@@ -121,7 +121,7 @@
                 return ocu7.Get() * 4;
             });
             await delay(300);
-            assert.isEqual(ocu7.Get(), 3, "Nested reactions with Nested RunAtQueueEnd and Lock did not execute correctly");
+            assert.isEqual(ocu7.Get(), 30, "Nested reactions with Nested RunAtQueueEnd and Lock did not execute correctly");
 
             // Test 11: Chain reactions using Nested RunAtQueueEnd and Lock
             console.log("Test 11: Chain reactions with Nested RunAtQueueEnd and Lock");
@@ -134,7 +134,7 @@
             }.bind(this));
             ocu8.RunAtQueueEnd(prevInner => prevInner * 5);
             await delay(300);
-            assert.isEqual(ocu8.Get(), 23, "Chain reactions with Nested RunAtQueueEnd and Lock did not execute correctly");
+            assert.isEqual(ocu8.Get(), 50, "Chain reactions with Nested RunAtQueueEnd and Lock did not execute correctly");
 
             console.log("All tests passed!");
         })().catch(error => {
