@@ -95,15 +95,46 @@
             await delay(350); // Waiting for all promises to resolve and updates to run
             assert.isEqual(ocu5.Get(), "start first middle last", "RunAtQueueEnd did not execute in order");
 
-            // Test 9: Chain reactions using RunAtQueueEnd
-            console.log("Test 9: Chain reactions with RunAtQueueEnd");
+            // Test 9: Nested reactions using Nested RunAtQueueEnd
+            console.log("Test 9: Nested reactions with Nested RunAtQueueEnd");
             const ocu6 = new OrderedConcurrentUpdate(0);
             ocu6.RunAtQueueEnd(prev => {
-                prev = ocu6.RunAtQueueEnd(prevInner => prevInner + 2);
-                return prev + 1;
+                ocu6.RunAtQueueEnd(prevInner => prevInner + 2);
+                return ocu6.Get() * 3;
             });
             await delay(100);
-            assert.isEqual(ocu6.Get(), 3, "Chain reactions with RunAtQueueEnd did not execute correctly");
+            assert.isEqual(ocu6.Get(), 6, "Nested reactions with Nested RunAtQueueEnd did not execute correctly");
+
+            // Test 10: Nested reactions using Nested RunAtQueueEnd and Lock
+            console.log("Test 10: Nested reactions with Nested RunAtQueueEnd and Lock");
+            const ocu7 = new OrderedConcurrentUpdate(0);
+            ocu7.RunAtQueueEnd(prev => {
+                ocu7.Lock(delay(100), function(prev2) {
+                    ocu7.RunAtQueueEnd(function(prevInner) {
+                         return ocu7.Get() * 2
+                    });
+                    return ocu7.Get() + 3;
+                });
+                ocu7.RunAtQueueEnd(function(prevInner) {
+                    return ocu7.Get() * 5;
+                });
+                return ocu7.Get() * 4;
+            });
+            await delay(300);
+            assert.isEqual(ocu7.Get(), 3, "Nested reactions with Nested RunAtQueueEnd and Lock did not execute correctly");
+
+            // Test 11: Chain reactions using Nested RunAtQueueEnd and Lock
+            console.log("Test 11: Chain reactions with Nested RunAtQueueEnd and Lock");
+            const ocu8 = new OrderedConcurrentUpdate(0);
+            ocu8.RunAtQueueEnd(prev => prev + 2).Lock(delay(100), function(prev){
+                ocu8.RunAtQueueEnd(function(prevInner) {
+                    return ocu8.Get() * 2
+                });
+                return ocu8.Get() + 3;
+            }.bind(this));
+            ocu8.RunAtQueueEnd(prevInner => prevInner * 5);
+            await delay(300);
+            assert.isEqual(ocu8.Get(), 23, "Chain reactions with Nested RunAtQueueEnd and Lock did not execute correctly");
 
             console.log("All tests passed!");
         })().catch(error => {

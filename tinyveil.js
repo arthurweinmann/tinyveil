@@ -1115,14 +1115,14 @@ class OrderedConcurrentUpdate {
 
     /**
      * To nest RunAtQueueEnd calls inside the provided updateCallback, you must overwrite the value passed as argument to updateCallback
-     * each time.
+     * each time with the value from the Get method from this class.
      * @param {function(previousvalue):newvalue} callback 
-     * @return {any}
+     * @return {OrderedConcurrentUpdate}
      */
     RunAtQueueEnd(updateCallback) {
         this.#queue.push({ queryablepromise: null, updateCallback });
         this.#runUnlockCallback();
-        return this.#variable;
+        return this;
     }
 
     /**
