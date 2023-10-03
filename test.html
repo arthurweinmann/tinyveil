@@ -71,6 +71,40 @@
             await delay(50);
             assert.isTrue(queryableResolved.isFulfilled());
 
+            // Test 6: RunAtQueueEnd should execute immediately when no promises are in the queue
+            console.log("Test 6: RunAtQueueEnd with no promises in the queue");
+            const ocu3 = new OrderedConcurrentUpdate(10);
+            ocu3.RunAtQueueEnd(prev => prev + 10);
+            assert.isEqual(ocu3.Get(), 20, "RunAtQueueEnd did not execute immediately");
+
+            // Test 7: RunAtQueueEnd should execute after all promises in the queue are resolved
+            console.log("Test 7: RunAtQueueEnd after promises");
+            const ocu4 = new OrderedConcurrentUpdate(0);
+            ocu4.Lock(delay(100).then(() => 1), prev => prev + 1);
+            ocu4.Lock(delay(50).then(() => 2), prev => prev * 2);
+            ocu4.RunAtQueueEnd(prev => prev + 3);
+            await delay(150); // Waiting a bit more than the longest delay
+            assert.isEqual(ocu4.Get(), 5, "RunAtQueueEnd did not execute after promises");
+
+            // Test 8: RunAtQueueEnd should wait when promises are still in the queue
+            console.log("Test 8: RunAtQueueEnd amidst promises");
+            const ocu5 = new OrderedConcurrentUpdate("start");
+            ocu5.Lock(delay(200).then(() => "first"), prev => prev + " first");
+            ocu5.RunAtQueueEnd(prev => prev + " middle");
+            ocu5.Lock(delay(100).then(() => "last"), prev => prev + " last");
+            await delay(350); // Waiting for all promises to resolve and updates to run
+            assert.isEqual(ocu5.Get(), "start first middle last", "RunAtQueueEnd did not execute in order");
+
+            // Test 9: Chain reactions using RunAtQueueEnd
+            console.log("Test 9: Chain reactions with RunAtQueueEnd");
+            const ocu6 = new OrderedConcurrentUpdate(0);
+            ocu6.RunAtQueueEnd(prev => {
+                prev = ocu6.RunAtQueueEnd(prevInner => prevInner + 2);
+                return prev + 1;
+            });
+            await delay(100);
+            assert.isEqual(ocu6.Get(), 3, "Chain reactions with RunAtQueueEnd did not execute correctly");
+
             console.log("All tests passed!");
         })().catch(error => {
             console.error(`Test failed: ${error.message}`);

@@ -1114,6 +1114,18 @@ class OrderedConcurrentUpdate {
     }
 
     /**
+     * To nest RunAtQueueEnd calls inside the provided updateCallback, you must overwrite the value passed as argument to updateCallback
+     * each time.
+     * @param {function(previousvalue):newvalue} callback 
+     * @return {any}
+     */
+    RunAtQueueEnd(updateCallback) {
+        this.#queue.push({ queryablepromise: null, updateCallback });
+        this.#runUnlockCallback();
+        return this.#variable;
+    }
+
+    /**
      * 
      * @param {Promise} promise 
      * @param {function(previousvalue):(newvalue)} updateCallback 
@@ -1122,13 +1134,18 @@ class OrderedConcurrentUpdate {
     Lock(promise, updateCallback) {
         const queryablepromise = MakeQueryablePromise(promise);
         this.#queue.push({ queryablepromise, updateCallback });
-        return queryablepromise.then(function() {
+        return queryablepromise.then(function () {
             this.#runUnlockCallback();
         }.bind(this));
     }
 
     #runUnlockCallback() {
-        while (this.#queue.length > 0 && this.#queue[0].queryablepromise.isFulfilled()) {
+        while (this.#queue.length > 0 &&
+            (
+                this.#queue[0].queryablepromise === null ||
+                this.#queue[0].queryablepromise.isFulfilled()
+            )
+        ) {
             let { updateCallback } = this.#queue.shift();
             this.#variable = updateCallback(this.#variable);
         }
