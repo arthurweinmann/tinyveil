@@ -1,10 +1,81 @@
 <html>
-    <head>
-    </head>
-    <body>
-        <script src="tinyveil.js"></script>
-        <script>
-            
-        </script>
-    </body>
+
+<head>
+</head>
+
+<body>
+    <script src="tinyveil.js"></script>
+    <script>
+        // Helper function to delay
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Define our "assert" functions for testing
+        const assert = {
+            isTrue: (condition, message) => {
+                if (!condition) {
+                    throw new Error(message || "Expected condition to be true but was false");
+                }
+            },
+            isEqual: (actual, expected, message) => {
+                if (actual !== expected) {
+                    throw new Error(message || `Expected ${actual} to equal ${expected}`);
+                }
+            },
+            throws: (fn, expectedMessage) => {
+                try {
+                    fn();
+                } catch (error) {
+                    assert.isEqual(error.message, expectedMessage, `Expected thrown message to be "${expectedMessage}" but was "${error.message}"`);
+                    return;
+                }
+                throw new Error(`Expected function to throw an error with message "${expectedMessage}" but did not throw`);
+            }
+        };
+
+        (async () => {
+            console.log("Test 1: Constructor should initialize with given value");
+            const ocu1 = new OrderedConcurrentUpdate("initial");
+            assert.isEqual(ocu1.Get(), "initial", "Constructor did not initialize correctly");
+
+            console.log("Test 2: Set method should set value when no promise is in queue");
+            ocu1.Set("changed");
+            assert.isEqual(ocu1.Get(), "changed");
+
+            console.log("Test 3: Set method should throw if promises are pending");
+            const dummyPromise = new Promise(() => { });
+            ocu1.Lock(dummyPromise, (prev) => prev + " updated");
+            assert.throws(() => ocu1.Set("illegal"), "We cannot set this value when they are still promises working on it");
+
+            console.log("Test 4: Updates should be ordered and executed after promises are resolved");
+            const ocu2 = new OrderedConcurrentUpdate(0);
+            ocu2.Lock(delay(200).then(() => 1), (prev) => prev + 1);
+            ocu2.Lock(delay(100).then(() => 2), (prev) => prev + 2);
+            ocu2.Lock(delay(50).then(() => 3), (prev) => prev + 3);
+            await delay(300); // Waiting a bit more than the longest delay
+            assert.isEqual(ocu2.Get(), 6, "Updates were not ordered or executed correctly");
+
+            console.log("Test 5: MakeQueryablePromise should change state correctly");
+            const unresolvedPromise = new Promise(() => { });
+            const queryableUnresolved = MakeQueryablePromise(unresolvedPromise);
+            assert.isTrue(queryableUnresolved.isPending());
+
+            const rejectedPromise = Promise.reject(new Error("Rejected!"));
+            const queryableRejected = MakeQueryablePromise(rejectedPromise);
+            await delay(50);
+            assert.isTrue(queryableRejected.isRejected());
+
+            const resolvedPromise = Promise.resolve("Resolved!");
+            const queryableResolved = MakeQueryablePromise(resolvedPromise);
+            await delay(50);
+            assert.isTrue(queryableResolved.isFulfilled());
+
+            console.log("All tests passed!");
+        })().catch(error => {
+            console.error(`Test failed: ${error.message}`);
+        });
+    </script>
+</body>
+
 </html>

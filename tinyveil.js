@@ -1122,13 +1122,13 @@ class OrderedConcurrentUpdate {
     Lock(promise, updateCallback) {
         const queryablepromise = MakeQueryablePromise(promise);
         this.#queue.push({ queryablepromise, updateCallback });
-        return queryablepromise.then(() => {
+        return queryablepromise.then(function() {
             this.#runUnlockCallback();
-        });
+        }.bind(this));
     }
 
     #runUnlockCallback() {
-        while (this.#queue.length > 0 && this.#queue[0].promise.isFulfilled()) {
+        while (this.#queue.length > 0 && this.#queue[0].queryablepromise.isFulfilled()) {
             let { updateCallback } = this.#queue.shift();
             this.#variable = updateCallback(this.#variable);
         }
