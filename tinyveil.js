@@ -1120,8 +1120,9 @@ class OrderedConcurrentUpdate {
      * @return {Promise}
      */
     Lock(promise, updateCallback) {
-        this.#queue.push({ updateCallback });
-        return MakeQueryablePromise(promise).then(() => {
+        const queryablepromise = MakeQueryablePromise(promise);
+        this.#queue.push({ queryablepromise, updateCallback });
+        return queryablepromise.then(() => {
             this.#runUnlockCallback();
         });
     }
