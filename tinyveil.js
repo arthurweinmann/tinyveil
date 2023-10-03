@@ -1074,6 +1074,8 @@ function DonePromise(arg) {
     return new Promise(function (resolve, reject) { resolve(arg); });
 }
 
+const NoOP = {_noop: true};
+
 /**
  * OrderedConcurrentUpdate makes sure a variable is updated by promises running concurrently in the same order in which they locked this class
  */
@@ -1147,7 +1149,10 @@ class OrderedConcurrentUpdate {
             )
         ) {
             let { updateCallback } = this.#queue.shift();
-            this.#variable = updateCallback(this.#variable);
+            let tmp = updateCallback(this.#variable);
+            if (tmp !== NoOP) {
+                this.#variable = tmp;
+            }
         }
     }
 }
