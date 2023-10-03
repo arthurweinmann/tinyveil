@@ -51,8 +51,8 @@
             console.log("Test 4: Updates should be ordered and executed after promises are resolved");
             const ocu2 = new OrderedConcurrentUpdate(0);
             ocu2.Lock(delay(200).then(() => 1), (prev) => prev + 1);
-            ocu2.Lock(delay(100).then(() => 2), (prev) => prev + 2);
-            ocu2.Lock(delay(50).then(() => 3), (prev) => prev + 3);
+            ocu2.Lock(delay(100).then(() => 2), (prev) => prev * 2);
+            ocu2.Lock(delay(50).then(() => 3), (prev) => prev * 3);
             await delay(300); // Waiting a bit more than the longest delay
             assert.isEqual(ocu2.Get(), 6, "Updates were not ordered or executed correctly");
 
