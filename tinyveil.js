@@ -939,7 +939,7 @@ function ASYNC(code, finalcb) {
 
         if (Array.isArray(value)) {
             if (value.every(isPromise)) {
-                return Promise.all(value)
+                return Promise.all(value) // Promise.all preserves the order of the promises in the result array.
                     .then(function (res) {
                         if (res.length !== value.length) {
                             panic(`we received a number of responses ${res.length} which does not match the number of promises ${value.length}`);
