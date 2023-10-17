@@ -180,7 +180,7 @@ function AssertNotEqual(src, target) {
 
 function AssertEqual(src, target) {
     if (src !== target) {
-        throw new Error("invalid parameter");
+        panic(`"invalid parameter": expected ${src} but got ${target}`);
     }
 }
 
