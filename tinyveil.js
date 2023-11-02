@@ -1042,6 +1042,35 @@ function ASYNCPromise(code, ...defers) {
 }
 
 /**
+ * 
+ * @param {string} url 
+ * @param {object} args 
+ * @return {Promise}
+ */
+function FetchJSON(url, args) {
+    AssertTypeOf('string', url);
+    return new Promise(function (resolve, reject) {
+        fetch(url, args)
+            .then(response => {
+                response.json()
+                    .then(obj => {
+                        if (!response.ok || !obj.success) {
+                            reject([new Error("The server returned the following payload as error: " + JSON.stringify(obj, null, 2)), null]);
+                        } else {
+                            resolve([null, obj]);
+                        }
+                    })
+                    .catch(error => {
+                        reject([new Error("We could not parse JSON response: " + error), null]);
+                    });
+            })
+            .catch(error => {
+                reject([new Error("There has been a problem with the fetch operation: " + error), null]);
+            });
+    });
+}
+
+/**
  * Asyncmethod returns the method from your class instance binded to this class instance. In Javascript, when you put the method
  * from a class instance into a variable, and call this from inside this method, it does not refer anymore to the class instance.
  * 
