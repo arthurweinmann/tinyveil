@@ -11,15 +11,26 @@ const TINYVEIL_CUSTOM_TYPES_CHECKS = {
 function AssertInstOf(target, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (!(src[i] instanceof target)) {
-            throw new Error("invalid parameter " + i + ": " + JSON.stringify(src[i]));
+            panic("invalid parameter " + i + ": " + JSON.stringify(src[i]));
         }
+    }
+}
+
+/**
+ * 
+ * @param {number} n 
+ */
+function AssertPositiveOrZero(n) {
+    AssertTypeOf('number', n);
+    if (n < 0) {
+        panic("invalid number " + n + " which is not positive or zero");
     }
 }
 
 function AssertNullOrInstOf(target, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (src[i] !== null && !(src[i] instanceof target)) {
-            throw new Error("invalid parameter " + i + ": " + JSON.stringify(src[i]));
+            panic("invalid parameter " + i + ": " + JSON.stringify(src[i]));
         }
     }
 }
@@ -36,7 +47,7 @@ function AssertComplexInstOf(conditions, ...src) {
 function AssertStringStartsWith(prefix, ...strs) {
     for (let i = 0; i < strs.length; i++) {
         if (!strs[i].startsWith(prefix)) {
-            throw new Error("invalid parameter " + i + ": " + strs[i]);
+            panic("invalid parameter " + i + ": " + strs[i]);
         }
     }
 }
@@ -48,34 +59,34 @@ function AssertStringStartsWithOr(str, ...prefixes) {
             return;
         }
     }
-    throw new Error("invalid parameter not starting with either " + prefixes.join(" or ") + ": " + str);
+    panic("invalid parameter not starting with either " + prefixes.join(" or ") + ": " + str);
 }
 
 function AssertTypeOf(t, ...src) {
     let customtype = null;
     if (typeof t === 'string' && TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== undefined) {
         if (typeof TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== 'function') {
-            throw new Error("tinyveil internal inconsistency error");
+            panic("tinyveil internal inconsistency error");
         }
         customtype = TINYVEIL_CUSTOM_TYPES_CHECKS[t];
     }
     for (let i = 0; i < src.length; i++) {
         if (customtype !== null) {
             if (!customtype(src[i])) {
-                throw new Error("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
+                panic("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
             }
         } else if (t === null) {
             if (src[i] !== null) {
-                throw new Error("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
+                panic("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
             }
         } else if (t === undefined) {
             if (src[i] !== undefined) {
-                throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                panic("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
             }
         } else if (src[i] === null || src[i] === undefined || typeof src[i] !== t) { // typeof null is "object" and typeof undefined is "undefined"
-            throw new Error("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
+            panic("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
         } else if (t === 'number' && isNaN(src[i])) {
-            throw new Error("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
+            panic("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
         }
     }
 }
@@ -84,7 +95,7 @@ function AssertNullOrTypeOf(t, ...src) {
     let customtype = null;
     if (typeof t === 'string' && TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== undefined) {
         if (typeof TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== 'function') {
-            throw new Error("tinyveil internal inconsistency error");
+            panic("tinyveil internal inconsistency error");
         }
         customtype = TINYVEIL_CUSTOM_TYPES_CHECKS[t];
     }
@@ -92,16 +103,16 @@ function AssertNullOrTypeOf(t, ...src) {
         if (src[i] !== null) {
             if (customtype !== null) {
                 if (!customtype(src[i])) {
-                    throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                    panic("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
                 }
             } else if (t === undefined) {
                 if (src[i] !== undefined) {
-                    throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                    panic("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
                 }
             } else if (typeof src[i] !== t) {
-                throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                panic("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
             } else if (t === 'number' && isNaN(src[i])) {
-                throw new Error("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                panic("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
             }
         }
     }
@@ -110,7 +121,7 @@ function AssertNullOrTypeOf(t, ...src) {
 function AssertEnum(src, possibleValues) {
     AssertInstOf(Array, possibleValues);
     if (!possibleValues.includes(src)) {
-        throw new Error("invalid parameter");
+        panic("invalid parameter");
     }
 }
 
@@ -124,7 +135,7 @@ function AssertOneOrTheOtherString(...n) {
         AssertTypeOf('string', n[i]);
         if (n[i].length > 0) {
             if (one) {
-                throw new Error("invalid parameters: only one non empty string supported");
+                panic("invalid parameters: only one non empty string supported");
             }
             one = true
         }
@@ -135,7 +146,7 @@ function AssertTypeOfOR(src, ...t) {
     for (let i = 0; i < t.length; i++) {
         if (typeof t[i] === 'string' && TINYVEIL_CUSTOM_TYPES_CHECKS[t[i]] !== undefined) {
             if (typeof TINYVEIL_CUSTOM_TYPES_CHECKS[t[i]] !== 'function') {
-                throw new Error("tinyveil internal inconsistency error");
+                panic("tinyveil internal inconsistency error");
             }
             if (TINYVEIL_CUSTOM_TYPES_CHECKS[t[i]](src)) {
                 return;
@@ -152,7 +163,7 @@ function AssertTypeOfOR(src, ...t) {
             return;
         }
     }
-    throw new Error("invalid parameter " + typeof src);
+    panic("invalid parameter " + typeof src);
 }
 
 function AssertInstOfOR(src, ...t) {
@@ -169,12 +180,12 @@ function AssertInstOfOR(src, ...t) {
             return;
         }
     }
-    throw new Error("invalid parameter " + typeof src);
+    panic("invalid parameter " + typeof src);
 }
 
 function AssertNotEqual(src, target) {
     if (src === target) {
-        throw new Error("invalid parameter");
+        panic("invalid parameter");
     }
 }
 
@@ -186,14 +197,14 @@ function AssertEqual(src, target) {
 
 function AssertArray(src) {
     if (!Array.isArray(src)) {
-        throw new Error("invalid parameter, expected an array, got: " + JSON.stringify(src));
+        panic("invalid parameter, expected an array, got: " + JSON.stringify(src));
     }
 }
 
 function AssertArrayOfInstances(src, t) {
     for (let i = 0; i < src.length; i++) {
         if (!(src[i] instanceof t)) {
-            throw new Error(`invalid parameter at index ${i}, expected a ${t}, got ${src[i]}`)
+            panic(`invalid parameter at index ${i}, expected a ${t}, got ${src[i]}`)
         }
     }
 }
@@ -204,7 +215,7 @@ function AssertArrayOfType(src, t) {
     let customtype = null;
     if (typeof t === 'string' && TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== undefined) {
         if (typeof TINYVEIL_CUSTOM_TYPES_CHECKS[t] !== 'function') {
-            throw new Error("tinyveil internal inconsistency error");
+            panic("tinyveil internal inconsistency error");
         }
         customtype = TINYVEIL_CUSTOM_TYPES_CHECKS[t];
     }
@@ -240,7 +251,7 @@ function AssertArrayOfType(src, t) {
 function AssertObjectSchema(obj, schema, referencedSchemas) {
     let resp = CheckObjectAgainstSchema(obj, schema, referencedSchemas);
     if (!resp.success) {
-        throw new Error("object does not respect schema: " + resp.message);
+        panic("object does not respect schema: " + resp.message);
     }
 }
 
@@ -321,7 +332,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
         if (typeof requiredType === 'string' && requiredType.charAt(0) === "$") {
             requiredType = referencedSchemas[requiredType];
             if (requiredType === undefined || typeof requiredType !== 'object') {
-                throw new Error("could not find the schema " + requiredType + " referenced in root schema defintion"); // better to panic early for this error than returning false
+                panic("could not find the schema " + requiredType + " referenced in root schema defintion"); // better to panic early for this error than returning false
             }
         }
 
@@ -329,7 +340,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             if (typeof reqT === 'string' && reqT.charAt(0) === "#") {
                 reqT = referencedSchemas[reqT];
                 if (reqT === undefined) {
-                    throw new Error("could not find the class " + reqT + " referenced in root schema defintion"); // better to panic early for this error than returning false
+                    panic("could not find the class " + reqT + " referenced in root schema defintion"); // better to panic early for this error than returning false
                 }
                 if (target instanceof reqT) {
                     return { success: true };
@@ -413,7 +424,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
                 if (typeof requiredType[0] === 'string' && requiredType[0].charAt(0) === "$") {
                     requiredType[0] = referencedSchemas[requiredType[0]];
                     if (requiredType[0] === undefined || typeof requiredType[0] !== 'object') {
-                        throw new Error("could not find the schema " + requiredType[0] + " referenced in root schema defintion"); // better to panic early for this error than returning false
+                        panic("could not find the schema " + requiredType[0] + " referenced in root schema defintion"); // better to panic early for this error than returning false
                     }
                 }
 
@@ -471,7 +482,7 @@ class HTMLElementType {
         AssertTypeOf("object", htmlSchema);
         let resp = CheckObjectAgainstSchema(htmlSchema, this.#NATIVE_SCHEMAS["$HTML_ELEMENT"], this.#NATIVE_SCHEMAS);
         if (!resp.success) {
-            throw new Error("invalid parameter: " + resp.message);
+            panic("invalid parameter: " + resp.message);
         }
         this.Schema = htmlSchema;
     }
@@ -769,7 +780,7 @@ class WebsocketAPI {
         AssertTypeOf('string', name);
         AssertTypeOf('object', requestType, responseType);
         if (this.routes[name] !== undefined) {
-            throw new Error("We already registered route " + name);
+            panic("We already registered route " + name);
         }
         this.routes[name] = {
             "requestType": requestType,
@@ -787,7 +798,7 @@ class WebsocketAPI {
      */
     Send(routename, message, cb) {
         if (this.routes[routename] === undefined) {
-            throw new Error("Route " + routename + " does not exist");
+            panic("Route " + routename + " does not exist");
         }
         let checkresp = CheckObjectAgainstSchema(message, this.routes[routename].requestType, this.references);
         if (!checkresp.success) {
@@ -924,7 +935,7 @@ function SetMStyle(styleObj, ...nodes) {
  */
 function ASYNC(code, finalcb) {
     if (typeof code !== 'function' || typeof finalcb !== 'function') {
-        throw new Error("The arguments must be functions.");
+        panic("The arguments must be functions.");
     }
 
     let generator = code();
@@ -969,7 +980,7 @@ function ASYNC(code, finalcb) {
             } else {
                 let [fn, ...args] = value;
                 if (typeof fn !== 'function') {
-                    throw new Error("The first element of the array should be a function.");
+                    panic("The first element of the array should be a function.");
                 }
                 fn(...args, iterator);
                 return;
@@ -998,7 +1009,7 @@ function ASYNC(code, finalcb) {
             return;
         }
 
-        throw new Error("Invalid yielded value. Expecting either a promise or an array.");
+        panic("Invalid yielded value. Expecting either a promise or an array.");
     }
 
     function handleError(e, length = 1) {
@@ -1090,7 +1101,7 @@ function FetchJSON(url, args) {
  */
 function Asyncmethod(objinstance, methodname) {
     if (objinstance[methodname] === undefined) {
-        throw new Error("Object does not contain the property:" + methodname);
+        panic("Object does not contain the property:" + methodname);
     }
     return objinstance[methodname].bind(objinstance);
 }
@@ -1394,14 +1405,14 @@ function stringLog() {
 }
 
 /**
- * Panic is a golang-ish shorthand for throw new Error({message})
+ * Panic is a golang-ish shorthand for panic({message})
  * @param {string} message 
  */
 function panic(message, ...args) {
     if (args.length > 0) {
-        throw new Error(stringLog(message, ...args));
+        panic(stringLog(message, ...args));
     }
-    throw new Error(message);
+    panic(message);
 }
 
 function isPromise(p) {
