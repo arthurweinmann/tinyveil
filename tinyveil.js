@@ -18,12 +18,14 @@ function AssertInstOf(target, ...src) {
 
 /**
  * 
- * @param {number} n 
+ * @param {...number} n 
  */
-function AssertPositiveOrZero(n) {
-    AssertTypeOf('number', n);
-    if (n < 0) {
-        panic("invalid number " + n + " which is not positive or zero");
+function AssertPositiveOrZero(...n) {
+    for (let i = 0; i < n.length; i++) {
+        AssertTypeOf('number', n[i]);
+        if (n[i] < 0) {
+            panic("invalid parameter " + i + " of value " + n[i] + " which is not positive or zero");
+        }
     }
 }
 
