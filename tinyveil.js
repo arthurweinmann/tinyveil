@@ -1412,9 +1412,9 @@ function stringLog() {
  */
 function panic(message, ...args) {
     if (args.length > 0) {
-        panic(stringLog(message, ...args));
+        throw new Error(stringLog(message, ...args));
     }
-    panic(message);
+    throw new Error(message);
 }
 
 function isPromise(p) {
