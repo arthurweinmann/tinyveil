@@ -361,7 +361,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             } else if (typeof target === reqT && (reqT !== 'number' || !isNaN(target))) {
                 return { success: true };
             }
-            return { success: false, message: stringLog(`Incorrect type for property: ${key}. Expected ${PrintfType(reqT)}, but got ${PrintfType(target)}`) };
+            return { success: false, message: stringLog(`Incorrect type for property: ${key}. got ${target}, but expected ${reqT}`) };
         };
 
         // If the required type is an object, recurse into it
@@ -1439,31 +1439,4 @@ function LogExecutionTime(identifier, func) {
     console.time("Execution Time of " + identifier); // Start timer
     func(); // Execute the function
     console.timeEnd("Execution Time of " + identifier); // End timer and log the result
-}
-
-/**
- * 
- * @param {any} value 
- * @return {string} 
- */
-function PrintfType(value) {
-    if (value === null) {
-        return "null";
-    }
-    const baseType = typeof value;
-    if (!["object", "function"].includes(baseType)) {
-        return baseType;
-    }
-    const tag = value[Symbol.toStringTag];
-    if (typeof tag === "string") {
-        return tag;
-    }
-    if (baseType === "function" && Function.prototype.toString.call(value).startsWith("class")) {
-        return "class";
-    }
-    const className = value.constructor.name;
-    if (typeof className === "string" && className !== "") {
-        return className;
-    }
-    return baseType;
 }
