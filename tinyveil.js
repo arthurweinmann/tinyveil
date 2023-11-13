@@ -75,20 +75,20 @@ function AssertTypeOf(t, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (customtype !== null) {
             if (!customtype(src[i])) {
-                panic("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
+                panic("invalid parameter " + i + ", expected " + t + " and got: " + typeof src[i] + " " + src[i]);
             }
         } else if (t === null) {
             if (src[i] !== null) {
-                panic("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
+                panic("invalid parameter " + i + ", expected " + t + " and got: " + typeof src[i] + " " + src[i]);
             }
         } else if (t === undefined) {
             if (src[i] !== undefined) {
                 panic("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
             }
         } else if (src[i] === null || src[i] === undefined || typeof src[i] !== t) { // typeof null is "object" and typeof undefined is "undefined"
-            panic("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
+            panic("invalid parameter " + i + ", expected " + t + " and got: " + typeof src[i] + " " + src[i]);
         } else if (t === 'number' && isNaN(src[i])) {
-            panic("invalid parameter " + i + ", expected " + t + ": " + typeof src[i] + " " + src[i]);
+            panic("invalid parameter " + i + ", expected " + t + " and got: " + typeof src[i] + " " + src[i]);
         }
     }
 }
@@ -105,16 +105,16 @@ function AssertNullOrTypeOf(t, ...src) {
         if (src[i] !== null) {
             if (customtype !== null) {
                 if (!customtype(src[i])) {
-                    panic("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                    panic("invalid parameter " + i + " and got: " + typeof src[i] + " " + src[i]);
                 }
             } else if (t === undefined) {
                 if (src[i] !== undefined) {
-                    panic("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                    panic("invalid parameter " + i + " and got: " + typeof src[i] + " " + src[i]);
                 }
             } else if (typeof src[i] !== t) {
-                panic("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                panic("invalid parameter " + i + " and got: " + typeof src[i] + " " + src[i]);
             } else if (t === 'number' && isNaN(src[i])) {
-                panic("invalid parameter " + i + ": " + typeof src[i] + " " + src[i]);
+                panic("invalid parameter " + i + " and got: " + typeof src[i] + " " + src[i]);
             }
         }
     }
