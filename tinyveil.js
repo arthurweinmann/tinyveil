@@ -361,7 +361,7 @@ function CheckObjectAgainstSchema(obj, schema, referencedSchemas) {
             } else if (typeof target === reqT && (reqT !== 'number' || !isNaN(target))) {
                 return { success: true };
             }
-            return { success: false, message: stringLog(`Incorrect type for property: ${key}. got ${target}, but expected ${reqT}`) };
+            return { success: false, message: stringLog(`Incorrect type for property: ${key}. Got ${stringLog(target)}, but expected ${stringLog(reqT)}`) };
         };
 
         // If the required type is an object, recurse into it
