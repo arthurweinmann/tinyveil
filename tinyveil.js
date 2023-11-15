@@ -123,7 +123,7 @@ function AssertNullOrTypeOf(t, ...src) {
 function AssertEnum(src, possibleValues) {
     AssertInstOf(Array, possibleValues);
     if (!possibleValues.includes(src)) {
-        panic("invalid parameter");
+        panic("invalid parameter", src, "which is not enum", possibleValues);
     }
 }
 
