@@ -935,7 +935,7 @@ function SetMStyle(styleObj, ...nodes) {
  * @param {string} style 
  */
 function SetCursorStyle(style, ...elements) {
-    AssertArrayOfInstances(elements, HTMLElement, SVGElement);
+    AssertObjectSchema({ elements: elements }, { elements: ["enum(#HTMLElement, #SVGElement)"] }, { "#HTMLElement": HTMLElement, "#SVGElement": SVGElement });
     AssertTypeOf('string', style);
     for (let i = 0; i < elements.length; i++) {
         elements[i].style.cursor = style;
