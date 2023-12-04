@@ -930,6 +930,22 @@ function SetMStyle(styleObj, ...nodes) {
 }
 
 /**
+ * handles prefixing the cursor type with -webkit when appropri
+ * @param {...HTMLElement} element 
+ * @param {string} style 
+ */
+function SetCursorStyle(style, ...elements) {
+    AssertArrayOfInstances(elements, HTMLElement, SVGElement);
+    AssertTypeOf('string', style);
+    for (let i = 0; i < elements.length; i++) {
+        elements[i].style.cursor = style;
+        if (elements[i].style.cursor !== style) {
+            elements[i].style.cursor = '-webkit-' + style;
+        }
+    }
+}
+
+/**
  * One final callback is great, we want to avoid callback hell consisting of many nested callbacks.
  * We want readable linear and flat code. We do not want obscurity and contamination as with async/await.
  * @param {function():void} code 
