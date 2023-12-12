@@ -11,7 +11,7 @@ const TINYVEIL_CUSTOM_TYPES_CHECKS = {
 function AssertInstOf(target, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (!(src[i] instanceof target)) {
-            panic("invalid parameter " + i + ": we got " + JSON.stringify(src[i]) + " but expected ", target);
+            panic("invalid parameter " + i + ": we got " + (src[i].constructor && src[i].constructor.name) ? src[i].constructor.name : JSON.stringify(src[i]) + " but expected ", target);
         }
     }
 }
@@ -1429,7 +1429,7 @@ function stringLog() {
 }
 
 /**
- * Panic is a golang-ish shorthand for panic({message})
+ * Panic is a golang-ish shorthand for thow new Error(message)
  * @param {string} message 
  */
 function panic(message, ...args) {
