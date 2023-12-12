@@ -1402,7 +1402,7 @@ function isQuoted(str) {
  */
 function stringLog() {
     let result = '';
-    const seen = new WeakSet();
+    const seen = new Set();
 
     for (let i = 0; i < arguments.length; i++) {
         if (typeof arguments[i] === 'object' && arguments[i] !== null) {
