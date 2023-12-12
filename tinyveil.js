@@ -203,11 +203,15 @@ function AssertArray(src) {
     }
 }
 
-function AssertArrayOfInstances(src, t) {
+function AssertArrayOfInstances(src, ...t) {
+    MAIN:
     for (let i = 0; i < src.length; i++) {
-        if (!(src[i] instanceof t)) {
-            panic(`invalid parameter at index ${i}, expected a ${t}, got ${src[i]}`)
+        for (let j = 0; j < t.length; j++) {
+            if (src[i] instanceof t[j]) {
+                continue MAIN;
+            }
         }
+        panic(`invalid parameter at index ${i}, expected one of ${t}, got ${src[i]}`)
     }
 }
 
