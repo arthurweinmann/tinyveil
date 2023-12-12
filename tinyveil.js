@@ -11,7 +11,7 @@ const TINYVEIL_CUSTOM_TYPES_CHECKS = {
 function AssertInstOf(target, ...src) {
     for (let i = 0; i < src.length; i++) {
         if (!(src[i] instanceof target)) {
-            panic("invalid parameter ", i, ": we got ", ((src[i].constructor && src[i].constructor.name) ? src[i].constructor.name : src[i]), " but expected ", target);
+            panic("invalid parameter ", i, ": we got ", ((src[i] && src[i].constructor && src[i].constructor.name) ? src[i].constructor.name : src[i]), " but expected ", target);
         }
     }
 }
