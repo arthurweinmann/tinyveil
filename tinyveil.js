@@ -191,9 +191,11 @@ function AssertNotEqual(src, target) {
     }
 }
 
-function AssertEqual(src, target) {
-    if (src !== target) {
-        panic(`"invalid parameter": expected ${src} but got ${target}`);
+function AssertEqual(src, ...targets) {
+    for (let i = 0; i < targets.length; i++) {
+        if (src !== targets[i]) {
+            panic(`invalid parameter at index ${i}: expected ${src} but got ${targets[i]}`);
+        }
     }
 }
 
