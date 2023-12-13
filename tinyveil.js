@@ -1105,6 +1105,10 @@ function FetchJSON(url, args) {
     });
 }
 
+function Sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 /**
  * Asyncmethod returns the method from your class instance binded to this class instance. In Javascript, when you put the method
  * from a class instance into a variable, and call this from inside this method, it does not refer anymore to the class instance.
