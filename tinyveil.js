@@ -955,7 +955,7 @@ function SetCursorStyle(style, ...elements) {
  * One final callback is great, we want to avoid callback hell consisting of many nested callbacks.
  * We want readable linear and flat code. We do not want obscurity and contamination as with async/await.
  * @param {function():void} code 
- * @param {function(...any):void} finalcb 
+ * @param {function(Err|null, ...any):void} finalcb 
  */
 function ASYNC(code, finalcb) {
     if (typeof code !== 'function' || typeof finalcb !== 'function') {
@@ -965,7 +965,6 @@ function ASYNC(code, finalcb) {
     let generator = code();
 
     function handleResult(result) {
-
         if (result.done) {
             return finalcb(...result.value);
         }
@@ -1074,6 +1073,17 @@ function ASYNCPromise(code, ...defers) {
             resolve([null, ...args]);
         });
     });
+}
+
+/**
+ * 
+ * @param {Promise} promise 
+ * @param {function(Err|null, ...any):void} cb 
+ */
+function PromiseCallback(promise, cb) {
+    ASYNC(function* () {
+        return yield promise;
+    }, cb);
 }
 
 /**
