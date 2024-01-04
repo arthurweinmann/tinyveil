@@ -201,11 +201,12 @@ function AssertEqual(src, ...targets) {
 
 function AssertArray(src) {
     if (!Array.isArray(src)) {
-        panic("invalid parameter, expected an array, got: " + JSON.stringify(src));
+        panic("invalid parameter, expected an array, got: " + src);
     }
 }
 
 function AssertArrayOfInstances(src, ...t) {
+    AssertArray(src);
     MAIN:
     for (let i = 0; i < src.length; i++) {
         for (let j = 0; j < t.length; j++) {
