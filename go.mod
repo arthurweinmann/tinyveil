@@ -1,4 +1,4 @@
-module tinyveil
+module github.com/arthurweinmann/tinyveil
 
 go 1.20
 
