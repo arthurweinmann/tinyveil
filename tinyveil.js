@@ -1044,8 +1044,8 @@ function ASYNC(code, finalcb) {
 
     function iterator(err, ...args) {
         if (err) {
-            // Handle the error, for now we are just throwing it
-            throw err;
+            handleResult(generator.next([err, ...args]));
+            return;
         }
         try {
             handleResult(generator.next([null, ...args]));
