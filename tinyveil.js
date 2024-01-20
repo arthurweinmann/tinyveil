@@ -967,7 +967,11 @@ function ASYNC(code, finalcb) {
 
     function handleResult(result) {
         if (result.done) {
-            return finalcb(...result.value);
+            // Be permissive in what we accept
+            if (Array.isArray(result.value)) {
+                return finalcb(...result.value);
+            }
+            return finalcb(result.value);
         }
 
         let value = result.value;
