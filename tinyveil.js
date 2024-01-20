@@ -967,7 +967,6 @@ function ASYNC(code, finalcb) {
 
     function handleResult(result) {
         if (result.done) {
-            // Be permissive in what we accept
             if (Array.isArray(result.value)) {
                 return finalcb(...result.value);
             }
@@ -1072,10 +1071,18 @@ function ASYNCPromise(code, ...defers) {
                 defers[i]();
             }
             if (err !== null) {
-                reject([err, ...Array(args.length).fill(null)]);
-                return
+                if (args && args.length > 0) {
+                    reject([err, ...Array(args.length).fill(null)]);
+                    return;
+                }
+                reject([err]);
+                return;
             }
-            resolve([null, ...args]);
+            if (args && args.length > 0) {
+                resolve([null, ...args]);
+                return;
+            }
+            resolve([null]);
         });
     });
 }
